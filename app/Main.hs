@@ -57,7 +57,7 @@ testActivities = M.fromList
       , description  = "Gå på musikalen Ringaren i Notre Dame"
       , date         = "2018-11-13 09:10"
       , host         = 1
-      , attendees    = [2]
+      , attendees    = [2,3]
       , meetingPoint = "Nope"
       , editPassword = "nope"
       }
@@ -79,6 +79,14 @@ testPersons = M.fromList
       { name           = "Josefine"
       , email          = "korre@bob.chalmersspexet.se"
       , phone          = Nothing
+      , hashedPassword = ""
+      }
+    )
+  , ( 3
+    , Person
+      { name  = "Bolle"
+      , email = "bolle@bob.chalmersspexet.se"
+      , phone = Nothing
       , hashedPassword = ""
       }
     )
