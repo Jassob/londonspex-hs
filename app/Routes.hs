@@ -48,9 +48,24 @@ routes as ps = do
 
   staticRoutes
 
+  get "/persons" $ do
+    persons <- getItems ps
+    json persons
 
-  get "/register" $ do
-    undefined
+  post "/person" $ do
+    let insertIfNotFound :: Person -> PersonMap -> PersonMap
+        insertIfNotFound p pm
+          | M.null $ M.filter (== p) pm = M.insert (newId pm) p pm
+          | otherwise                   = pm
+    newPerson <- jsonData
+    persons <- updateItems ps (pure . insertIfNotFound newPerson)
+    void $ storeState "persons.state" persons
+    text "OK"
+
+  get "/person/:personId" $ do
+    personId <- param "personId"
+    person   <- getItemById personId ps
+    maybe notFound json person
 
   get "/activities" $ do
     activities <- getItems as
