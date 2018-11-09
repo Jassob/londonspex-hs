@@ -18,26 +18,11 @@ import           Control.Monad.IO.Class         ( MonadIO
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
-import           Data.List                      ( foldl' )
-import           Data.Text.Lazy                 ( Text, pack, unpack )
-import           Web.Scotty                     ( ScottyM
-                                                , ActionM
-                                                , capture
-                                                , raise
-                                                , get
-                                                , post
-                                                , put
-                                                , html
-                                                , file
-                                                , param
-                                                , status
-                                                , text
-                                                , json
-                                                , jsonData
-                                                , setHeader
-                                                )
-import           Network.HTTP.Types             ( notFound404 )
+import           Data.Text.Lazy                 ( pack )
+import           Web.Scotty              hiding ( notFound )
+import           Network.HTTP.Types
 import           Types
+import           Lib
 
 type ActivityMap = HashMap Int Activity
 type PersonMap   = HashMap Int Person
