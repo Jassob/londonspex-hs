@@ -43,15 +43,6 @@ routes as ps = do
 
   staticRoutes
 
-  get "/static/js/:resource" $ do
-    resource <- param "resource"
-    setHeader "Content-Type" "application/javascript"
-    file ("web/build/static/js/" ++ resource)
-
-  get "/static/css/:resource" $ do
-    resource <- param "resource"
-    setHeader "Content-Type" "text/css"
-    file ("web/build/static/css/" ++ resource)
 
   get "/register" $ do
     undefined
