@@ -23,7 +23,10 @@ class App extends React.Component {
 
     mergeActivities(response) {
 	let persons = response.data[1];
-	let replaceAttendee = (attendees, attendeeId) => attendees[attendeeId] = persons[attendeeId];
+	let replaceAttendee = (attendees, attendeeId) => {
+	    attendees[attendeeId] = persons[attendeeId];
+	    return attendees;
+	};
 	return Utils.objectMap(response.data[0], (act) => {
 	    act.host = persons[act.host];
 	    act.attendees = act.attendees.reduce(replaceAttendee, {});
@@ -117,14 +120,10 @@ class Activity extends React.Component {
     }
 
     renderFull() {
-	const attendees = Object.assign(this.props.activity.attendees, null);
 	let mapAttendees = (obj, func) => Utils.objectToList(Utils.objectMapWithKey(obj, func));
-	let attendeeDisp = mapAttendees(attendees,
-					(k, v) => <li><Attendee person={v} key={v} onClick={() => this.props.removeAttendee(k)} /></li>);
-	// var attendeeDisp = [];
-	// for (let attendeeId in attendees) {
-	//     attendeeDisp.push(<li><Attendee person={attendees[attendeeId]} onClick={() => this.props.removeAttendee(attendeeId)} /></li>);
-	// }
+	let attendeeDisp = mapAttendees(this.props.activity.attendees,
+					(k, v) => <li><Attendee person={v} key={k} onClick={() => this.props.removeAttendee(k)} /></li>);
+	console.log(attendeeDisp);
 	const editable = this.state.edited;
 	const activity = this.state.edited ? this.state.editedActivity : this.props.activity;
 	return (
@@ -135,7 +134,7 @@ class Activity extends React.Component {
 	      </header>
 	      <dl>
 		<dt>Ansvarig</dt>
-		<dd contentEditable={editable}>{activity.host}</dd>
+		<dd contentEditable={editable}>{activity.host.name}</dd>
 		<dt>Starttid</dt>
 		<dd contentEditable={editable}>{activity.date}</dd>
 		<dt>Mötesplats</dt>
@@ -166,7 +165,7 @@ class Activity extends React.Component {
 }
 
 function Attendee(props) {
-    return <p>{props.name}</p>;
+    return <p onClick={props.onClick}>{props.person.name}</p>;
 }
 
 export default App;
