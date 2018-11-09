@@ -102,11 +102,11 @@ notFound :: ActionM ()
 notFound = status notFound404 >> text "404 Not found"
 
 updateActivity :: Int -> Activity -> ActivityMap -> ActivityMap
-updateActivity activityId updated as = M.insert activityId updated as
-
+updateActivity = M.insert
 
 getAttendees :: [Int] -> PersonMap -> PersonMap
-getAttendees ids persons = M.filterWithKey (\pid _ -> pid `elem` ids) persons
+getAttendees ids = M.filterWithKey (\pid _ -> pid `elem` ids)
+
 getItemById
   :: (Eq k, Hashable k, MonadIO m)
   => k -- ^ Id of item to retrieve
