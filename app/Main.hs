@@ -41,10 +41,10 @@ main = do
 --
 -- If these for some reason are not readable it
 -- returns an empty structure.
-initState :: MonadIO m => m (MVar (HashMap Int Activity), MVar (HashMap Int Person))
+initState :: MonadIO m => m (MVar ActivityMap, MVar PersonMap)
 initState = do
   activities <- fromMaybe mempty <$> readState "activities.state"
   persons    <- fromMaybe mempty <$> readState "persons.state"
-  aMVar    <- liftIO $ newMVar activities
-  pMVar    <- liftIO $ newMVar persons
+  aMVar      <- liftIO $ newMVar activities
+  pMVar      <- liftIO $ newMVar persons
   pure (aMVar, pMVar)

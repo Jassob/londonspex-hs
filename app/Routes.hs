@@ -37,7 +37,7 @@ import           Types
 type ActivityMap = HashMap Int Activity
 type PersonMap   = HashMap Int Person
 
-routes :: MVar (HashMap Int Activity) -> MVar (HashMap Int Person) -> ScottyM ()
+routes :: MVar ActivityMap -> MVar PersonMap -> ScottyM ()
 routes as ps = do
   get "/" $ html =<< liftIO (pack <$> readFile "web/build/index.html")
 
