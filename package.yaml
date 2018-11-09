@@ -20,13 +20,14 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/githubuser/londonspex-hs#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- text
-- scotty
-- microlens-platform
 - aeson
-- unordered-containers
+- base >= 4.7 && < 5
+- hashable
 - http-types
+- microlens-platform
+- scotty
+- text
+- unordered-containers
 
 library:
   source-dirs: src

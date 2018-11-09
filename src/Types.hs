@@ -22,7 +22,11 @@ data Person = Person
   , email :: Text
   , phone :: Maybe Text
   , hashedPassword :: Text
-  } deriving (Show, Read, Eq, Generic)
+  } deriving (Show, Read, Generic)
+
+instance Eq Person where
+  p1 == p2 = email p1 == email p2
+
 
 instance ToJSON Person where
   toEncoding = genericToEncoding defaultOptions
