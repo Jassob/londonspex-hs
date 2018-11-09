@@ -7,10 +7,15 @@
 
 module Routes where
 
-import           Control.Concurrent.MVar        ( MVar, readMVar, modifyMVar_ )
+import           Control.Concurrent.MVar        ( MVar
+                                                , readMVar
+                                                , modifyMVar
+                                                )
+import           Control.Monad                  ( void )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
+import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
 import           Data.List                      ( foldl' )
@@ -48,28 +53,33 @@ routes as ps = do
     undefined
 
   get "/activities" $ do
-    activities <- liftIO (readMVar as)
-    persons <- liftIO (readMVar ps)
+    activities <- getItems as
+    persons    <- getItems ps
     json (activities, persons)
 
   get "/activity/:activityId" $ do
     activityId <- read <$> param "activityId"
-    activities <- liftIO $ readMVar as
-    persons <- liftIO $ readMVar ps
-    maybe notFound json $ getActivity activityId activities persons
+    persons    <- getItems ps
+    activity   <- getItemById activityId as
+    flip (maybe notFound) activity $ \act ->
+      let actHost      = M.lookup (host act) persons
+          actAttendees = map (`M.lookup` persons) (attendees act)
+      in  json (act, actHost, actAttendees)
 
   post "/activity/" $ do
-    request <- jsonData :: ActionM Activity
-    json request
+    let addNewActivity :: Activity -> ActivityMap -> ActivityMap
+        addNewActivity a am = M.insert (newId am) a am
+    newActivity <- jsonData
+    activities <- updateItems as (pure . addNewActivity newActivity)
+    void $ storeState "activities.state" activities
+    text "OK"
 
   put "/activity/:activityId" $ do
     activityId <- read <$> param "activityId"
-    activities <- liftIO $ readMVar as
-    persons <- liftIO $ readMVar ps
-    updatedActivity <- jsonData :: ActionM Activity
-    let activities' = updateActivity activityId updatedActivity activities
-    liftIO $ modifyMVar_ as (const $ pure activities')
-
+    updatedActivity <- jsonData
+    activities <- updateItems as $ pure . M.insert activityId updatedActivity
+    void $ storeState "activities.state" activities
+    text "OK"
 
 staticRoutes :: ScottyM ()
 staticRoutes = do
@@ -87,11 +97,6 @@ defineStaticRoute type' = get (capture $ "/static/" <> type' <> "/:resource") $ 
         contentType "img" = pure "image/png"
         contentType _     = raise "defineStaticRoute: not a defined Content-Type"
 
-getActivity :: Int -> ActivityMap -> PersonMap -> Maybe (Activity, Person, PersonMap)
-getActivity activityId activities persons = do
-  activity <- M.lookup activityId activities
-  host <- M.lookup (host activity) persons
-  pure (activity, host, getAttendees (attendees activity) persons)
 
 notFound :: ActionM ()
 notFound = status notFound404 >> text "404 Not found"
@@ -102,3 +107,23 @@ updateActivity activityId updated as = M.insert activityId updated as
 
 getAttendees :: [Int] -> PersonMap -> PersonMap
 getAttendees ids persons = M.filterWithKey (\pid _ -> pid `elem` ids) persons
+getItemById
+  :: (Eq k, Hashable k, MonadIO m)
+  => k -- ^ Id of item to retrieve
+  -> MVar (HashMap k v)
+  -> m (Maybe v)
+getItemById k mvar = liftIO $ M.lookup k <$> readMVar mvar
+
+getItems :: MonadIO m => MVar a -> m a
+getItems mvar = liftIO $ readMVar mvar
+
+updateItems :: MonadIO m => MVar a -> (a -> IO a) -> m a
+updateItems mvar f = liftIO $ modifyMVar mvar (twice f)
+ where
+  twice :: (a -> IO a) -> (a -> IO (a, a))
+  twice fn a = do
+    fa <- fn a
+    pure (fa, fa)
+
+newId :: HashMap Int a -> Int
+newId = (+ 1) . maximum . M.keys
