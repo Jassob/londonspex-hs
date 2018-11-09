@@ -28,6 +28,7 @@ dependencies:
 - scotty
 - text
 - unordered-containers
+- wai-cors
 
 library:
   source-dirs: src

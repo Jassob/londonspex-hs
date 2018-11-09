@@ -19,7 +19,9 @@ import           Data.Maybe                     ( fromMaybe
 import           Data.Monoid                    ( mempty )
 import           Data.Text.Lazy                 ( )
 import           Network.HTTP.Types.Status      ( notFound404 )
-import           Web.Scotty
+import           Network.Wai.Middleware.Cors    ( simpleCors )
+import           Web.Scotty                     ( scotty
+                                                , middleware )
 
 import           Lib
 import           Types
@@ -28,7 +30,9 @@ import           Routes
 main :: IO ()
 main = do
   (activities, persons) <- initState
-  scotty 3000 $ routes activities persons
+  scotty 3000 $ do
+    middleware simpleCors
+    routes activities persons
 
 -- | Reads the last state.
 --
