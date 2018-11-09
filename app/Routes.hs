@@ -43,7 +43,7 @@ routes as ps = do
           | M.null $ M.filter (== p) pm = M.insert (newId pm) p pm
           | otherwise                   = pm
     newPerson <- jsonData
-    persons <- updateItems ps (pure . insertIfNotFound newPerson)
+    persons   <- updateItems ps (pure . insertIfNotFound newPerson)
     void $ storeState "persons.state" persons
     text "OK"
 
@@ -70,7 +70,7 @@ routes as ps = do
     let addNewActivity :: Activity -> ActivityMap -> ActivityMap
         addNewActivity a am = M.insert (newId am) a am
     newActivity <- jsonData
-    activities <- updateItems as (pure . addNewActivity newActivity)
+    activities  <- updateItems as (pure . addNewActivity newActivity)
     void $ storeState "activities.state" activities
     text "OK"
 
@@ -88,15 +88,16 @@ staticRoutes = do
   defineStaticRoute "css"
 
 defineStaticRoute :: String -> ScottyM ()
-defineStaticRoute type' = get (capture $ "/static/" <> type' <> "/:resource") $ do
-  resource <- param "resource"
-  setHeader "Content-Type"  =<< contentType type'
-  file ("web/build/static/js/" <> resource)
-  where contentType "css" = pure "text/css"
-        contentType "js"  = pure "application/javascript"
-        contentType "img" = pure "image/png"
-        contentType _     = raise "defineStaticRoute: not a defined Content-Type"
-
+defineStaticRoute type' =
+  get (capture $ "/static/" <> type' <> "/:resource") $ do
+    resource <- param "resource"
+    setHeader "Content-Type" =<< contentType type'
+    file ("web/build/static/js/" <> resource)
+ where
+  contentType "css" = pure "text/css"
+  contentType "js"  = pure "application/javascript"
+  contentType "img" = pure "image/png"
+  contentType _     = raise "defineStaticRoute: not a defined Content-Type"
 
 notFound :: ActionM ()
 notFound = status notFound404 >> text "404 Not found"
