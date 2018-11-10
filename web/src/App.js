@@ -54,8 +54,33 @@ class App extends React.Component {
 	alert("Not implemented yet");
     }
 
-    removeActivity() {
-	alert("Not implemented yet");
+    addAttendee(actId) {
+	alert("Not implemented yet.");
+    }
+
+    /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
+    saveActivity(actId, activity) {
+	if (actId !== 'new') {
+	    axios.put(settings.baseURL + '/activity/' + actId, activity)
+		.then(this.getActivities())
+		.catch((error) => console.log('Update error: ', error));
+	} else {
+	    axios.post(settings.baseURL + '/activity/', activity)
+		.then(this.getActivities())
+		.catch((error) => console.log('Create error:', error));
+	}
+    }
+
+    removeActivity(actId) {
+	if (actId !== 'new') {
+	    axios.delete(settings.baseURL + '/activity/' + actId)
+		.then(this.getActivities())
+		.catch((error) => console.log(error));
+	} else {
+	    let activities = Object.assign(this.state.activities, null);
+	    delete activities.new;
+	    this.setState({activities: activities});
+	}
     }
 
     render() {
