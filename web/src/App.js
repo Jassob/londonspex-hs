@@ -50,14 +50,6 @@ class App extends React.Component {
 	alert("Not implemented yet");
     }
 
-    saveActivity() {
-	alert("Not implemented yet");
-    }
-
-    addAttendee(actId) {
-	alert("Not implemented yet.");
-    }
-
     /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
     saveActivity(actId, activity) {
 	if (actId !== 'new') {
