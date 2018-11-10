@@ -25,6 +25,7 @@ dependencies:
 - hashable
 - http-types
 - microlens-platform
+- pwstore-fast
 - scotty
 - text
 - unordered-containers

@@ -6,11 +6,19 @@ import           Control.Exception              ( IOException
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
+import           Crypto.PasswordStore           ( verifyPassword, pbkdf1, makePassword )
 import           Data.Aeson                     ( ToJSON
                                                 , FromJSON
                                                 , encodeFile
                                                 , decodeFileStrict
                                                 )
+
+import           Data.Text                      ( Text )
+import           Data.Text.Encoding             ( encodeUtf8
+                                                , decodeUtf8
+                                                )
+
+import           Types
 
 storeState :: (MonadIO m, ToJSON a, FromJSON a) => FilePath -> a -> m Bool
 storeState fp a = liftIO . handle handler $ encodeFile fp a >> pure True
@@ -23,3 +31,6 @@ readState fp = liftIO . handle handler $ decodeFileStrict fp
  where
   handler :: IOException -> IO (Maybe a)
   handler = const $ pure Nothing
+
+checkPassword :: Text -> Person -> Bool
+checkPassword pwd = verifyPassword (encodeUtf8 pwd) . encodeUtf8 . hashedPassword
