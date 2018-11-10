@@ -26,16 +26,24 @@ class App extends React.Component {
 	    .catch((error) => console.log("axios failed: ", error));
     }
 
+    newActivity() {
+	return {
+	    "title": "Rubrik (ändra mig)",
+	    "description": "Beskrivning (ändra mig)",
+	    "date": "(ändra mig)",
+	    "host":"",
+	    "attendees": [],
+	    "meetingPoint": "(ändra mig)",
+	    "editPassword": ""
 	};
-	return Utils.objectMap(response.data[0], (act) => {
-	    act.host = persons[act.host];
-	    act.attendees = act.attendees.reduce(replaceAttendee, {});
-	    return act;
-	});
     }
 
     addActivity() {
-	alert("Not implemented yet");
+	let newActivity = this.newActivity();
+	newActivity.host = this.state.user;
+	const activities = Object.assign(this.state.activities, null);
+	activities.new = newActivity;
+	this.setState({activities: activities, editedActivity: "new"});
     }
 
     addAttendee() {
