@@ -8,12 +8,14 @@ class App extends React.Component {
     constructor(props) {
 	super(props);
 
-	this.getActivities();
-
 	this.state = {
 	    activities: {},
 	    editedActivity: null,
 	};
+    }
+
+    componentWillMount(){
+	this.getActivities();
     }
 
     getActivities() {
