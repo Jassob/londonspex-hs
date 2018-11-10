@@ -6,17 +6,17 @@ import           Control.Exception              ( IOException
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
-import           Crypto.PasswordStore           ( verifyPassword, pbkdf1, makePassword )
+import           Crypto.PasswordStore           ( verifyPassword )
 import           Data.Aeson                     ( ToJSON
                                                 , FromJSON
                                                 , encodeFile
                                                 , decodeFileStrict
                                                 )
-
-import           Data.Text                      ( Text )
-import           Data.Text.Encoding             ( encodeUtf8
-                                                , decodeUtf8
+import           Data.Text                      ( Text
+                                                , splitOn
+                                                , replace
                                                 )
+import           Data.Text.Encoding             ( encodeUtf8 )
 
 import           Types
 

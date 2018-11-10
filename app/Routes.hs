@@ -18,9 +18,13 @@ import           Control.Monad.IO.Class         ( MonadIO
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
-import           Data.Text.Lazy                 ( pack )
+import           Data.Text.Lazy                 ( pack
+                                                , toStrict
+                                                )
+import           Data.Text.Lazy.Encoding        ( decodeUtf8 )
 import           Web.Scotty              hiding ( notFound )
 import           Network.HTTP.Types
+
 import           Types
 import           Lib
 

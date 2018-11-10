@@ -5,26 +5,19 @@ module Main where
 
 import           Control.Concurrent.MVar        ( MVar
                                                 , newMVar
-                                                , modifyMVar
-                                                , readMVar
                                                 )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
-import           Data.HashMap.Strict            ( HashMap )
-import qualified Data.HashMap.Strict           as M
-import           Data.Maybe                     ( fromMaybe
-                                                , isNothing
-                                                )
+import           Data.Maybe                     ( fromMaybe )
 import           Data.Monoid                    ( mempty )
 import           Data.Text.Lazy                 ( )
-import           Network.HTTP.Types.Status      ( notFound404 )
 import           Network.Wai.Middleware.Cors    ( simpleCors )
 import           Web.Scotty                     ( scotty
-                                                , middleware )
+                                                , middleware
+                                                )
 
 import           Lib
-import           Types
 import           Routes
 
 main :: IO ()

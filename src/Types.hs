@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveAnyClass#-}
 
 -- | Types module
 --
@@ -7,10 +7,8 @@
 
 module Types where
 
-import           Data.Aeson.Types               ( ToJSON(..)
-                                                , FromJSON(..)
-                                                , genericToEncoding
-                                                , defaultOptions
+import           Data.Aeson.Types               ( ToJSON
+                                                , FromJSON
                                                 )
 import           Data.Text
 import           GHC.Generics
@@ -22,16 +20,11 @@ data Person = Person
   , email :: Text
   , phone :: Maybe Text
   , hashedPassword :: Text
-  } deriving (Show, Read, Generic)
+  } deriving (Show, Read, Generic, ToJSON, FromJSON)
 
 instance Eq Person where
   p1 == p2 = email p1 == email p2
 
-
-instance ToJSON Person where
-  toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON Person
 
 type PersonId = Int
 
@@ -44,9 +37,4 @@ data Activity = Activity
   , attendees :: [PersonId]
   , meetingPoint :: Text
   , editPassword :: Text
-  } deriving (Show, Read, Eq, Generic)
-
-instance ToJSON Activity where
-  toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON Activity
+  } deriving (Show, Read, Eq, Generic, ToJSON, FromJSON)
