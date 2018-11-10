@@ -18,9 +18,9 @@ import           Control.Monad.IO.Class         ( MonadIO
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
-import           Data.Text.Lazy                 ( pack
-                                                , toStrict
-                                                )
+import           Data.Maybe                     ( isJust )
+import qualified Data.Text                     as TS
+import qualified Data.Text.Lazy                as TL
 import           Data.Text.Lazy.Encoding        ( decodeUtf8 )
 import           Web.Scotty              hiding ( notFound )
 import           Network.HTTP.Types
@@ -29,54 +29,51 @@ import           Types
 import           Lib
 
 type ActivityMap = HashMap Int Activity
-type PersonMap   = HashMap Int Person
+type PersonMap   = HashMap TS.Text DbPerson
 
 routes :: MVar ActivityMap -> MVar PersonMap -> ScottyM ()
 routes as ps = do
-  get "/" $ html =<< liftIO (pack <$> readFile "web/build/index.html")
+  get "/" $ html =<< liftIO (TL.pack <$> readFile "web/build/index.html")
 
   staticRoutes
 
   -- TODO: Return session cookie that is valid for some time
   post "/login" $ do
-    loginReq <- decodeUrlEncode . toStrict . decodeUtf8 <$> body
-    persons  <- getItems ps
+    loginReq <- decodeUrlEncode . TL.toStrict . decodeUtf8 <$> body
     flip (maybe (status badRequest400)) loginReq $ \login -> do
-      let persons' = M.filter ((==) (loginEmail login) . email) persons
-      if M.null persons'
-        then unauthorized
-        else do
-          let p   = head . M.elems $ persons'
-              res = checkPassword (loginPassword login) p
-          if res then json p else status unauthorized401
+      maybeP <- getItemById (loginEmail login) ps
+      flip (maybe unauthorized) maybeP $ \p ->
+        if checkPassword (loginPassword login) p then json (person p) else unauthorized
 
   get "/persons" $ do
-    persons <- getItems ps
+    persons <- fmap person <$> getItems ps
     json persons
 
-  post "/person" $ do
-    let insertIfNotFound :: Person -> PersonMap -> PersonMap
-        insertIfNotFound p pm
-          | M.null $ M.filter (== p) pm = M.insert (newId pm) p pm
-          | otherwise                   = pm
-    newPerson <- jsonData
-    persons   <- updateItems ps (pure . insertIfNotFound newPerson)
-    void $ storeState "persons.state" persons
-    text "OK"
+  post "/register" $ do
+    newPerson     <- jsonData
+    alreadyExists <- isJust <$> getItemById ((email . person) newPerson) ps
+    if alreadyExists
+      then status badRequest400 >> text "User already exists"
+      else do
+        persons <- updateItems
+          ps
+          (pure . M.insert ((email . person) newPerson) newPerson)
+        void $ storeState "persons.state" persons
+        text "OK"
 
   get "/person/:personId" $ do
     personId <- param "personId"
-    person   <- getItemById personId ps
-    maybe notFound json person
+    p        <- fmap person <$> getItemById personId ps
+    maybe notFound json p
 
   get "/activities" $ do
     activities <- getItems as
-    persons    <- getItems ps
+    persons    <- fmap person <$> getItems ps
     json (activities, persons)
 
   get "/activity/:activityId" $ do
     activityId <- read <$> param "activityId"
-    persons    <- getItems ps
+    persons    <- fmap person <$> getItems ps
     activity   <- getItemById activityId as
     flip (maybe notFound) activity $ \act ->
       let actHost      = M.lookup (host act) persons
@@ -125,7 +122,7 @@ unauthorized = status unauthorized401 >> text "401 Login failed"
 updateActivity :: Int -> Activity -> ActivityMap -> ActivityMap
 updateActivity = M.insert
 
-getAttendees :: [Int] -> PersonMap -> PersonMap
+getAttendees :: [TS.Text] -> PersonMap -> PersonMap
 getAttendees ids = M.filterWithKey (\pid _ -> pid `elem` ids)
 
 getItemById

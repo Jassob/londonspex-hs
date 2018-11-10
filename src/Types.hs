@@ -19,11 +19,14 @@ data Person = Person
   { name :: Text
   , email :: Text
   , phone :: Maybe Text
-  , hashedPassword :: Text
-  } deriving (Show, Read, Generic, ToJSON, FromJSON)
+  } deriving (Show, Read, Eq, Generic, ToJSON, FromJSON)
 
-instance Eq Person where
-  p1 == p2 = email p1 == email p2
+-- | A DbPerson represents the Database view of a person, it consists
+-- of a person and a password.
+data DbPerson = DbPerson
+  { person :: Person
+  , hashedPassword :: Text
+  } deriving (Show, Read, Eq, Generic, ToJSON, FromJSON)
 
 -- | A JSON payload sent from the frontend when logging in
 data LoginPayload = LoginPayload
@@ -31,7 +34,7 @@ data LoginPayload = LoginPayload
   , loginPassword :: Text
   } deriving (Show, Read, Generic, ToJSON, FromJSON)
 
-type PersonId = Int
+type PersonId = Text
 
 -- | An Activity represents an event that is hosted by one Person
 data Activity = Activity

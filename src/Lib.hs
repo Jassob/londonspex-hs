@@ -34,7 +34,7 @@ readState fp = liftIO . handle handler $ decodeFileStrict fp
   handler :: IOException -> IO (Maybe a)
   handler = const $ pure Nothing
 
-checkPassword :: Text -> Person -> Bool
+checkPassword :: Text -> DbPerson -> Bool
 checkPassword pwd =
   verifyPassword (encodeUtf8 pwd) . encodeUtf8 . hashedPassword
 
