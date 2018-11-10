@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Lib where
 
 import           Control.Exception              ( IOException
@@ -33,4 +35,17 @@ readState fp = liftIO . handle handler $ decodeFileStrict fp
   handler = const $ pure Nothing
 
 checkPassword :: Text -> Person -> Bool
-checkPassword pwd = verifyPassword (encodeUtf8 pwd) . encodeUtf8 . hashedPassword
+checkPassword pwd =
+  verifyPassword (encodeUtf8 pwd) . encodeUtf8 . hashedPassword
+
+decodeUrlEncode :: Text -> Maybe LoginPayload
+decodeUrlEncode s = do
+  let payload = (pairs . decodeUrl) s
+  pEmail    <- lookup "loginEmail" payload
+  pPassword <- lookup "loginPassword" payload
+  return (LoginPayload pEmail pPassword)
+ where
+  pairs = map ((\[a, b] -> (a, b)) . splitOn "=") . splitOn "&"
+  decodeUrl =
+    replace "%3F" "?" . replace "%3D" "=" . replace "%40" "@" . replace "%26"
+                                                                        "&"

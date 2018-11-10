@@ -25,6 +25,11 @@ data Person = Person
 instance Eq Person where
   p1 == p2 = email p1 == email p2
 
+-- | A JSON payload sent from the frontend when logging in
+data LoginPayload = LoginPayload
+  { loginEmail :: Text
+  , loginPassword :: Text
+  } deriving (Show, Read, Generic, ToJSON, FromJSON)
 
 type PersonId = Int
 

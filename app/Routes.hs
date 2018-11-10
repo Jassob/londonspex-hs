@@ -37,6 +37,19 @@ routes as ps = do
 
   staticRoutes
 
+  -- TODO: Return session cookie that is valid for some time
+  post "/login" $ do
+    loginReq <- decodeUrlEncode . toStrict . decodeUtf8 <$> body
+    persons  <- getItems ps
+    flip (maybe (status badRequest400)) loginReq $ \login -> do
+      let persons' = M.filter ((==) (loginEmail login) . email) persons
+      if M.null persons'
+        then unauthorized
+        else do
+          let p   = head . M.elems $ persons'
+              res = checkPassword (loginPassword login) p
+          if res then json p else status unauthorized401
+
   get "/persons" $ do
     persons <- getItems ps
     json persons
@@ -105,6 +118,9 @@ defineStaticRoute type' =
 
 notFound :: ActionM ()
 notFound = status notFound404 >> text "404 Not found"
+
+unauthorized :: ActionM ()
+unauthorized = status unauthorized401 >> text "401 Login failed"
 
 updateActivity :: Int -> Activity -> ActivityMap -> ActivityMap
 updateActivity = M.insert
