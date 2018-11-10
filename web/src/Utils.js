@@ -25,3 +25,15 @@ exports.objectToList = function(object) {
     }
     return result;
 };
+
+exports.mergeActivities = function(activities, persons) {
+    let replaceAttendee = (attendees, attendeeId) => {
+	attendees[attendeeId] = persons[attendeeId];
+	return attendees;
+    };
+    return this.objectMap(activities, act => {
+	act.host = persons[act.host];
+	act.attendees = act.attendees.reduce(replaceAttendee, {});
+	return act;
+    });
+}

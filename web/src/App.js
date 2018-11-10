@@ -19,15 +19,10 @@ class App extends React.Component {
     getActivities() {
 	axios.get(settings.baseURL + '/activities')
 	    .then((response) =>
-		  this.setState({ activities: this.mergeActivities(response) }))
+		  this.setState({ activities: Utils.mergeActivities(response.data[0], response.data[1]) }))
 	    .catch((error) => console.log("axios failed: ", error));
     }
 
-    mergeActivities(response) {
-	let persons = response.data[1];
-	let replaceAttendee = (attendees, attendeeId) => {
-	    attendees[attendeeId] = persons[attendeeId];
-	    return attendees;
 	};
 	return Utils.objectMap(response.data[0], (act) => {
 	    act.host = persons[act.host];
