@@ -14,9 +14,6 @@ import           Data.Aeson                     ( ToJSON
                                                 , encodeFile
                                                 , decodeFileStrict
                                                 )
-import           Data.Text                      ( Text
-                                                , splitOn
-                                                , replace
 import           Data.Text                      ( Text )
 import           Data.Text.Encoding             ( encodeUtf8
                                                 , decodeUtf8

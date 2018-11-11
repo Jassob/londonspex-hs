@@ -71,8 +71,7 @@ routes as ps = do
   get "/activity/:activityId" $ do
     activityId <- read <$> param "activityId"
     persons    <- fmap person <$> getItems ps
-    activity   <- getItemById activityId as
-    flip (maybe notFound) activity $ \act ->
+    whenExists (getItemById activityId as) $ \act ->
       let actHost      = M.lookup (host act) persons
           actAttendees = map (`M.lookup` persons) (attendees act)
       in  json (act, actHost, actAttendees)
@@ -156,6 +155,11 @@ bodyStrict = TL.toStrict . decodeUtf8 <$> body
 liftNothing :: Maybe a -> ActionM a
 liftNothing Nothing  = raise "liftNothing: Nothing"
 liftNothing (Just a) = pure a
+
+whenExists :: ActionM (Maybe a) -> (a -> ActionM ()) -> ActionM ()
+whenExists actM actJust = do
+  m <- actM
+  maybe (badRequest "Not found") actJust m
 
 whenNotExists :: ActionM (Maybe a) -> ActionM () -> ActionM ()
 whenNotExists actM actNothing = do
