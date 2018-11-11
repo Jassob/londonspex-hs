@@ -127,14 +127,16 @@ class App extends React.Component {
 	const activities = [];
 	for (let actId in this.state.activities) {
 	    const editable = this.state.editedActivity === actId ? true : false;
-	    activities.push(<Activity
-			    activity={this.state.activities[actId]}
-			    addAttendee={() => this.addAttendee(actId)}
-			    saveActivity={() => this.saveActivity(actId)}
-			    removeActivity={() => this.removeActivity(actId)}
-			    editable={editable}
-			    new={editable}
-			    key={actId} />);
+	    activities.push(
+		<Activity
+		  activity={this.state.activities[actId]}
+		  addAttendee={() => this.addAttendee(actId)}
+		  saveActivity={() => this.saveActivity(actId)}
+		  removeActivity={() => this.removeActivity(actId)}
+		  editable={editable}
+		  new={editable}
+		  key={actId} />
+	    );
 	}
 	return (
 	    <div>
