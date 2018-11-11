@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Lib where
 
 import           Control.Exception              ( IOException
@@ -8,7 +6,9 @@ import           Control.Exception              ( IOException
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
-import           Crypto.PasswordStore           ( verifyPassword )
+import           Crypto.PasswordStore           ( verifyPassword
+                                                , makePassword
+                                                )
 import           Data.Aeson                     ( ToJSON
                                                 , FromJSON
                                                 , encodeFile
@@ -17,8 +17,10 @@ import           Data.Aeson                     ( ToJSON
 import           Data.Text                      ( Text
                                                 , splitOn
                                                 , replace
+import           Data.Text                      ( Text )
+import           Data.Text.Encoding             ( encodeUtf8
+                                                , decodeUtf8
                                                 )
-import           Data.Text.Encoding             ( encodeUtf8 )
 
 import           Types
 
@@ -37,3 +39,9 @@ readState fp = liftIO . handle handler $ decodeFileStrict fp
 checkPassword :: Text -> DbPerson -> Bool
 checkPassword pwd =
   verifyPassword (encodeUtf8 pwd) . encodeUtf8 . hashedPassword
+
+-- | Creates a new person by hashing the provided password
+newPerson :: DbPerson -> IO DbPerson
+newPerson p = do
+  pwd <- decodeUtf8 <$> makePassword (encodeUtf8 $ hashedPassword p) 17
+  pure $ p { hashedPassword = pwd }

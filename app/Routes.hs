@@ -15,11 +15,9 @@ import           Control.Monad                  ( void )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
-import           Data.Bool                      ( bool )
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
-import           Data.Maybe                     ( isJust )
 import qualified Data.Text                     as TS
 import qualified Data.Text.Lazy                as TL
 import           Data.Text.Lazy.Encoding        ( decodeUtf8 )
@@ -41,30 +39,24 @@ routes as ps = do
 
   -- TODO: Return session cookie that is valid for some time
   post "/login" $ rescueBadRequest $ do
-    login  <- liftNothing =<< fromUrlEncoded <$> bodyStrict
-    maybeP <- getItemById (loginEmail login) ps
-    flip (maybe unauthorized) maybeP $ \p ->
+    login <- liftNothing =<< fromUrlEncoded <$> bodyStrict
+    whenExists (getItemById (loginEmail login) ps) $ \p ->
       if checkPassword (loginPassword login) p
-      then json (person p)
-      else unauthorized
+        then json (person p)
+        else unauthorized
+
+  post "/register" $ rescueBadRequest $ do
+    regReq <- liftNothing =<< fromUrlEncoded <$> bodyStrict
+    let pId = (email . person) regReq
+    whenNotExists (getItemById pId ps) $ do
+      persons <- updateItems ps
+        $ \persons -> M.insert pId <$> newPerson regReq <*> pure persons
+      void $ storeState "persons.state" persons
+      json (person regReq)
 
   get "/persons" $ do
     persons <- fmap person <$> getItems ps
     json persons
-
-  post "/register" $ rescueBadRequest $ do
-    newPerson <- liftNothing =<< fromUrlEncoded <$> bodyStrict
-    let
-      pId = (email . person) newPerson
-      handleExists :: ActionM ()
-      handleExists =
-        badRequest $ "User " <> TL.fromStrict pId <> " already exists"
-
-    alreadyExists <- isJust <$> getItemById pId ps
-    flip (bool handleExists) alreadyExists $ do
-      persons <- updateItems ps (pure . M.insert pId newPerson)
-      void $ storeState "persons.state" persons
-      text "OK"
 
   get "/person/:personId" $ do
     personId <- param "personId"
@@ -164,3 +156,8 @@ bodyStrict = TL.toStrict . decodeUtf8 <$> body
 liftNothing :: Maybe a -> ActionM a
 liftNothing Nothing  = raise "liftNothing: Nothing"
 liftNothing (Just a) = pure a
+
+whenNotExists :: ActionM (Maybe a) -> ActionM () -> ActionM ()
+whenNotExists actM actNothing = do
+  m <- actM
+  maybe actNothing (const $ badRequest "Already exists") m
