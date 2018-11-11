@@ -46,3 +46,32 @@ exports.mergeActivities = function(activities, persons) {
 	return act;
     });
 }
+
+exports.storageStore = function(key, value) {
+    if (typeof(Storage) !== "undefined") {
+	localStorage.setItem(key, value);
+    } else {
+	const cookie = JSON.parse(document.cookie.slice()).key=value;
+	let date = new Date();
+	date.setDate(date.getDate() + 10);
+	document.cookie = cookie + "; expires=" + date.toString();
+    }
+};
+
+exports.storageRead = function(key) {
+    if (typeof(Storage) !== "undefined") {
+	return localStorage.getItem(key);
+    } else {
+	return JSON.parse(document.cookie.slice());
+    }
+};
+
+exports.storageDelete = function(key) {
+    if (typeof(Storage) !== "undefined") {
+	localStorage.removeItem(key);
+    } else {
+	let cookie = JSON.parse(document.cookie.slice());
+	delete cookie[key];
+	document.cookie = cookie;
+    }
+};

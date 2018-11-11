@@ -10,10 +10,16 @@ class App extends React.Component {
 
 	this.state = {
 	    activities: {},
-	    user: undefined,
+	    user: JSON.parse(Utils.storageRead("user")),
 	    editedActivity: null,
 	    api: this.createApi(),
 	};
+    }
+
+    componentWillMount() {
+	if (this.state.user) {
+	    this.getActivities();
+	}
     }
 
     createApi() {
@@ -82,9 +88,14 @@ class App extends React.Component {
 	}
     }
 
+    logout() {
+	Utils.storageDelete("user");
+	this.setState({"user": undefined});
+    }
+
     render() {
 	let content = this.state.user ? this.renderActivities() : this.renderLogin();
-
+	let logoutButton = this.state.user ? <button onClick={() => this.logout()}>Logga ut</button> : "";
 	return (
 	    <div>
 	      {this.renderHeader()}
@@ -104,9 +115,19 @@ class App extends React.Component {
     }
 
     renderFooter() {
+	let logoutButton = "";
+	if (this.state.user) {
+	    logoutButton = (
+		<button onClick={() => {
+		    Utils.storageDelete("user");
+		    this.setState({"user": undefined});
+		}}>Logga ut</button>
+	    );
+	}
 	return (
 	    <footer>
 	      <p>Skapad av Den Gode Pastorn</p>
+	      {logoutButton}
 	    </footer>
 	);
     }
@@ -116,6 +137,7 @@ class App extends React.Component {
 	return (
 	    <LoginForm
 	      callback={(response) => {
+		  Utils.store("user", JSON.stringify(response));
 		  this.getActivities();
 		  this.setState({user: response});
 	      }}
