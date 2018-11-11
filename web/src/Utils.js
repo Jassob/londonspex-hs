@@ -26,6 +26,15 @@ exports.objectToList = function(object) {
     return result;
 };
 
+exports.urlencode = function(object) {
+    return encodeURIComponent(
+	Object.keys(object).reduce(function(result, key) {
+	    let str = key + "=" + object[key]
+	    return result === "" ? str : result + "&" + str
+	}, "")
+    );
+};
+
 exports.mergeActivities = function(activities, persons) {
     let replaceAttendee = (attendees, attendeeId) => {
 	attendees[attendeeId] = persons[attendeeId];

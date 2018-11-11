@@ -12,18 +12,25 @@ class App extends React.Component {
 	    activities: {},
 	    user: undefined,
 	    editedActivity: null,
+	    api: this.createApi(),
 	};
     }
 
-    componentWillMount(){
-	this.getActivities();
+    createApi() {
+	const api = axios.create({
+	    'baseURL': settings.baseURL,
+	});
+
+	api.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+	api.defaults.headers.put['Content-Type'] = 'application/x-www-form-urlencoded';
+	return api;
     }
 
     getActivities() {
-	axios.get(settings.baseURL + '/activities')
+	this.state.api.get('/activities')
 	    .then((response) =>
 		  this.setState({ activities: Utils.mergeActivities(response.data[0], response.data[1]) }))
-	    .catch((error) => console.log("axios failed: ", error));
+	    .catch((error) => console.log("getActivities: request failed with error ", error));
     }
 
     newActivity() {
@@ -53,11 +60,11 @@ class App extends React.Component {
     /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
     saveActivity(actId, activity) {
 	if (actId !== 'new') {
-	    axios.put(settings.baseURL + '/activity/' + actId, activity)
+	    this.state.api.put('/activity/' + actId, Utils.urlencode(activity))
 		.then(this.getActivities())
 		.catch((error) => console.log('Update error: ', error));
 	} else {
-	    axios.post(settings.baseURL + '/activity/', activity)
+	    this.state.api.post('/activity/', Utils.urlencode(activity), )
 		.then(this.getActivities())
 		.catch((error) => console.log('Create error:', error));
 	}
@@ -65,7 +72,7 @@ class App extends React.Component {
 
     removeActivity(actId) {
 	if (actId !== 'new') {
-	    axios.delete(settings.baseURL + '/activity/' + actId)
+	    this.state.api.delete('/activity/' + actId)
 		.then(this.getActivities())
 		.catch((error) => console.log(error));
 	} else {
@@ -107,7 +114,12 @@ class App extends React.Component {
     /* TODO: Add localStorage with session cookie */
     renderLogin() {
 	return (
-	    <LoginForm callback={(response) => this.setState({user: response})} />
+	    <LoginForm
+	      callback={(response) => {
+		  this.getActivities();
+		  this.setState({user: response});
+	      }}
+	      api={this.state.api} />
 	);
     }
 
@@ -166,12 +178,9 @@ class LoginForm extends React.Component {
     }
 
     checkLogin() {
-	let payload = encodeURIComponent('loginEmail=' + this.state.email + '&loginPassword=' + this.state.password);
-	axios.post(settings.baseURL+'/login',
-	 	   payload, { headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-	 		      responseType: 'application/json' })
-	    .then((response) => {console.log(response);
-	 			 this.props.callback(response);})
+	let payload = Utils.urlencode({ loginEmail: this.state.email, loginPassword: this.state.password });
+	this.props.api.post('/login', payload)
+	    .then((response) => this.props.callback(response))
 	    .catch((error) => console.log("Failed to login", error));
     }
 }
