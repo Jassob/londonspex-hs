@@ -15,6 +15,7 @@ import           Control.Monad                  ( void )
 import           Control.Monad.IO.Class         ( MonadIO
                                                 , liftIO
                                                 )
+import           Data.Bool                      ( bool )
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
@@ -27,6 +28,7 @@ import           Network.HTTP.Types
 
 import           Types
 import           Lib
+import           UrlEncoded
 
 type ActivityMap = HashMap Int Activity
 type PersonMap   = HashMap TS.Text DbPerson
@@ -38,28 +40,31 @@ routes as ps = do
   staticRoutes
 
   -- TODO: Return session cookie that is valid for some time
-  post "/login" $ do
-    loginReq <- decodeUrlEncode . TL.toStrict . decodeUtf8 <$> body
-    flip (maybe (status badRequest400)) loginReq $ \login -> do
-      maybeP <- getItemById (loginEmail login) ps
-      flip (maybe unauthorized) maybeP $ \p ->
-        if checkPassword (loginPassword login) p then json (person p) else unauthorized
+  post "/login" $ rescueBadRequest $ do
+    login  <- liftNothing =<< fromUrlEncoded <$> bodyStrict
+    maybeP <- getItemById (loginEmail login) ps
+    flip (maybe unauthorized) maybeP $ \p ->
+      if checkPassword (loginPassword login) p
+      then json (person p)
+      else unauthorized
 
   get "/persons" $ do
     persons <- fmap person <$> getItems ps
     json persons
 
-  post "/register" $ do
-    newPerson     <- jsonData
-    alreadyExists <- isJust <$> getItemById ((email . person) newPerson) ps
-    if alreadyExists
-      then status badRequest400 >> text "User already exists"
-      else do
-        persons <- updateItems
-          ps
-          (pure . M.insert ((email . person) newPerson) newPerson)
-        void $ storeState "persons.state" persons
-        text "OK"
+  post "/register" $ rescueBadRequest $ do
+    newPerson <- liftNothing =<< fromUrlEncoded <$> bodyStrict
+    let
+      pId = (email . person) newPerson
+      handleExists :: ActionM ()
+      handleExists =
+        badRequest $ "User " <> TL.fromStrict pId <> " already exists"
+
+    alreadyExists <- isJust <$> getItemById pId ps
+    flip (bool handleExists) alreadyExists $ do
+      persons <- updateItems ps (pure . M.insert pId newPerson)
+      void $ storeState "persons.state" persons
+      text "OK"
 
   get "/person/:personId" $ do
     personId <- param "personId"
@@ -80,17 +85,17 @@ routes as ps = do
           actAttendees = map (`M.lookup` persons) (attendees act)
       in  json (act, actHost, actAttendees)
 
-  post "/activity/" $ do
+  post "/activity/" $ rescueBadRequest $ do
     let addNewActivity :: Activity -> ActivityMap -> ActivityMap
         addNewActivity a am = M.insert (newId am) a am
-    newActivity <- jsonData
+    newActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     activities  <- updateItems as (pure . addNewActivity newActivity)
     void $ storeState "activities.state" activities
     text "OK"
 
-  put "/activity/:activityId" $ do
+  put "/activity/:activityId" $ rescueBadRequest $ do
     activityId <- read <$> param "activityId"
-    updatedActivity <- jsonData
+    updatedActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     activities <- updateItems as $ pure . M.insert activityId updatedActivity
     void $ storeState "activities.state" activities
     text "OK"
@@ -119,6 +124,12 @@ notFound = status notFound404 >> text "404 Not found"
 unauthorized :: ActionM ()
 unauthorized = status unauthorized401 >> text "401 Login failed"
 
+badRequest :: TL.Text -> ActionM ()
+badRequest msg = status badRequest400 >> text msg
+
+rescueBadRequest :: ActionM () -> ActionM ()
+rescueBadRequest act = rescue act (const $ badRequest "Failed to parse form")
+
 updateActivity :: Int -> Activity -> ActivityMap -> ActivityMap
 updateActivity = M.insert
 
@@ -145,3 +156,11 @@ updateItems mvar f = liftIO $ modifyMVar mvar (twice f)
 
 newId :: HashMap Int a -> Int
 newId = (+ 1) . maximum . M.keys
+
+bodyStrict :: ActionM TS.Text
+bodyStrict = TL.toStrict . decodeUtf8 <$> body
+
+-- Lifts Nothings into a Scotty error
+liftNothing :: Maybe a -> ActionM a
+liftNothing Nothing  = raise "liftNothing: Nothing"
+liftNothing (Just a) = pure a
