@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { Component } from 'react';
 import axios from 'axios';
 import settings from './settings.js';
-var Utils = require('./Utils.js');
 
-class App extends React.Component {
 import ActivityList from './ActivityList.js';
 import LoginForm from './LoginForm.js';
+import Utils from './Utils.js';
+
+class App extends Component {
     constructor(props) {
 	super(props);
 
