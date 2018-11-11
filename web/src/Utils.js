@@ -27,10 +27,18 @@ exports.objectToList = function(object) {
 };
 
 exports.urlencode = function(object) {
+    let escapeArray = function(value) {
+	if (!Array.isArray(value)) { return value; }
+
+	let values = value.map((v, k) => typeof v === 'string' ? "\"" + v + "\"" : v);
+	return "[" + values + "]";
+    };
+
     return encodeURIComponent(
 	Object.keys(object).reduce(function(result, key) {
-	    let str = key + "=" + object[key]
-	    return result === "" ? str : result + "&" + str
+	    let value = escapeArray(object[key]);
+	    let str = key + "=" + value;
+	    return result === "" ? str : result + "&" + str;
 	}, "")
     );
 };
@@ -45,7 +53,14 @@ exports.mergeActivities = function(activities, persons) {
 	act.attendees = act.attendees.reduce(replaceAttendee, {});
 	return act;
     });
-}
+};
+
+exports.unmergeActivity = function(activity) {
+    let newAct = Object.assign(activity, null);
+    newAct.host = activity.host.email;
+    newAct.attendees = Object.keys(activity.attendees);
+    return newAct;
+};
 
 exports.storageStore = function(key, value) {
     if (typeof(Storage) !== "undefined") {
