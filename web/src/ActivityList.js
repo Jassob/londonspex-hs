@@ -49,15 +49,14 @@ class ActivityList extends Component {
     }
 
     addAttendee(actId) {
-	let activities = Object.assign(this.state.activities, null);
-	if (activities[actId].attendees[this.props.user.email]) {
-	    console.log("Already attends");
+        let activity = Utils.unmergeActivity(this.state.activities[actId]);
+	if (activity.attendees.includes(this.props.user.email)) {
+            activity.attendees = activity.attendees.filter((email) => email !== this.props.user.email);
 	} else {
-	    let activity = Utils.unmergeActivity(activities[actId]);
             activity.attendees.push(this.props.user.email);
-            this.props.api.post('/activity/' + actId, Utils.urlencode(activity))
-                .then(this.reloadActivities());
 	}
+        this.props.api.post('/activity/' + actId, Utils.urlencode(activity))
+            .then(this.reloadActivities());
     }
 
     /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
