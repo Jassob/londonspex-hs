@@ -18,7 +18,6 @@ class Activity extends React.Component {
 	this.state = {
 	    isExpanded: false,
 	    isEditable: this.props.editable,
-	    editedActivity: props.activity,
 	};
     }
 
