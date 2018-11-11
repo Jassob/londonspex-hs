@@ -1,25 +1,17 @@
 import React from 'react';
 import axios from 'axios';
 import settings from './settings.js';
-import Activity from './Activity.js';
 var Utils = require('./Utils.js');
 
 class App extends React.Component {
+import ActivityList from './ActivityList.js';
     constructor(props) {
 	super(props);
 
 	this.state = {
-	    activities: {},
 	    user: JSON.parse(Utils.storageRead("user")),
-	    editedActivity: null,
 	    api: this.createApi(),
 	};
-    }
-
-    componentWillMount() {
-	if (this.state.user) {
-	    this.getActivities();
-	}
     }
 
     createApi() {
@@ -30,62 +22,6 @@ class App extends React.Component {
 	api.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 	api.defaults.headers.put['Content-Type'] = 'application/x-www-form-urlencoded';
 	return api;
-    }
-
-    getActivities() {
-	this.state.api.get('/activities')
-	    .then((response) =>
-		  this.setState({ activities: Utils.mergeActivities(response.data[0], response.data[1]) }))
-	    .catch((error) => console.log("getActivities: request failed with error ", error));
-    }
-
-    newActivity() {
-	return {
-	    "title": "Rubrik (ändra mig)",
-	    "description": "Beskrivning (ändra mig)",
-	    "date": "(ändra mig)",
-	    "host":"",
-	    "attendees": [],
-	    "meetingPoint": "(ändra mig)",
-	    "editPassword": ""
-	};
-    }
-
-    addActivity() {
-	let newActivity = this.newActivity();
-	newActivity.host = this.state.user;
-	const activities = Object.assign(this.state.activities, null);
-	activities.new = newActivity;
-	this.setState({activities: activities, editedActivity: "new"});
-    }
-
-    addAttendee() {
-	alert("Not implemented yet");
-    }
-
-    /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
-    saveActivity(actId, activity) {
-	if (actId !== 'new') {
-	    this.state.api.put('/activity/' + actId, Utils.urlencode(activity))
-		.then(this.getActivities())
-		.catch((error) => console.log('Update error: ', error));
-	} else {
-	    this.state.api.post('/activity/', Utils.urlencode(activity), )
-		.then(this.getActivities())
-		.catch((error) => console.log('Create error:', error));
-	}
-    }
-
-    removeActivity(actId) {
-	if (actId !== 'new') {
-	    this.state.api.delete('/activity/' + actId)
-		.then(this.getActivities())
-		.catch((error) => console.log(error));
-	} else {
-	    let activities = Object.assign(this.state.activities, null);
-	    delete activities.new;
-	    this.setState({activities: activities});
-	}
     }
 
     logout() {
@@ -146,27 +82,11 @@ class App extends React.Component {
     }
 
     renderActivities() {
-	const activities = [];
-	for (let actId in this.state.activities) {
-	    const editable = this.state.editedActivity === actId ? true : false;
-	    activities.push(
-		<Activity
-		  activity={this.state.activities[actId]}
-		  addAttendee={() => this.addAttendee(actId)}
-		  saveActivity={() => this.saveActivity(actId)}
-		  removeActivity={() => this.removeActivity(actId)}
-		  editable={editable}
-		  new={editable}
-		  key={actId} />
-	    );
-	}
 	return (
-	    <div>
-	      {activities}
-	      <button onClick={() => this.addActivity()}>
-		Lägg till ny aktivitet
-	      </button>
-	    </div>
+	    <ActivityList
+	      user={this.state.user}
+	      api={this.state.api}
+	      />
 	);
     }
 }
