@@ -35,41 +35,19 @@ import LoginForm from './LoginForm.js';
 	let logoutButton = this.state.user ? <button onClick={() => this.logout()}>Logga ut</button> : "";
 	return (
 	    <div>
-	      {this.renderHeader()}
+	      <header>
+		<h1>Aktiviteter - London</h1>
+		<h2>Chalmersspexet Bob 2018 Geronimo</h2>
+	      </header>
 	      {content}
-	      {this.renderFooter()}
+	      <footer>
+		<p>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">Den Gode Pastorn</a></p>
+		{logoutButton}
+	      </footer>
 	    </div>
 	);
     }
 
-    renderHeader() {
-	return (
-	    <header>
-		<h1>Aktiviteter - London</h1>
-		<h2>Chalmersspexet Bob 2018 Geronimo</h2>
-	      </header>
-	);
-    }
-
-    renderFooter() {
-	let logoutButton = "";
-	if (this.state.user) {
-	    logoutButton = (
-		<button onClick={() => {
-		    Utils.storageDelete("user");
-		    this.setState({"user": undefined});
-		}}>Logga ut</button>
-	    );
-	}
-	return (
-	    <footer>
-	      <p>Skapad av Den Gode Pastorn</p>
-	      {logoutButton}
-	    </footer>
-	);
-    }
-
-    /* TODO: Add localStorage with session cookie */
     renderLogin() {
 	return (
 	    <LoginForm
