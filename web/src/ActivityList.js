@@ -48,7 +48,7 @@ class ActivityList extends Component {
 	this.setState({activities: activities, editedActivity: "new"});
     }
 
-    addAttendee(actId) {
+    toggleAttendence(actId) {
         let activity = Utils.unmergeActivity(this.state.activities[actId]);
 	if (activity.attendees.includes(this.props.user.email)) {
             activity.attendees = activity.attendees.filter((email) => email !== this.props.user.email);
@@ -91,7 +91,7 @@ class ActivityList extends Component {
 	    activities.push(
 		<Activity
 		  activity={this.state.activities[actId]}
-		  addAttendee={() => this.addAttendee(actId)}
+		  toggleAttendence={() => this.toggleAttendence(actId)}
 		  saveActivity={() => this.saveActivity(actId)}
 		  removeActivity={() => this.removeActivity(actId)}
 		  editable={editable}

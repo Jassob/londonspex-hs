@@ -7,7 +7,7 @@ var Utils = require('./Utils.js');
  *
  * Properties:
  * - 'activity': An activity returned from the backend
- * - 'addAttendee': A function for showing interest in this activity
+ * - 'toggleAttendence': A function for showing interest in this activity
  * - 'removeAttendee': A function for removing an attendee
  * - 'saveActivity': A function for saving an edited activity
  */
@@ -38,7 +38,7 @@ class Activity extends React.Component {
 		  Öppna aktivitet
 		</button>
 	      </header>
-	      <button onClick={() => this.props.addAttendee()}>
+	      <button onClick={() => this.props.toggleAttendence()}>
 		Anmäl intresse
 	      </button>
 	    </div>
