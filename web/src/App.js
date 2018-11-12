@@ -38,13 +38,14 @@ class App extends Component {
 
     render() {
 	let content = this.state.user ? this.renderActivities() : this.renderLogin();
-	let logoutButton = this.state.user ? <Button variant="contained" color="secondary"
-                                                     onClick={() => this.logout()}>Logga ut</Button> : "";
+	let logoutButton = this.state.user ? (
+            <Grid item xs={4} md={2}><Button variant="contained" color="secondary"
+                                             onClick={() => this.logout()}>Logga ut</Button></Grid>) : "";
 	return (
 	    <Grid container
                   justify="space-around">
               <CssBaseline />
-              <Grid item xs={12} sm={10} md={8} >
+              <Grid item xs={10} md={8} >
                 <Grid container direction="row"
                       justify="center"
                       alignItems="baseline"
@@ -60,14 +61,12 @@ class App extends Component {
                 </Grid>
                 <hr/>
                 <Grid container direction="row" spacing={16}>
-                  <Grid item xs={4} md={2}>
-                    {logoutButton}
-                  </Grid>
-                  <Grid item xs={10} md={6} className="left">
+		  {logoutButton}
+                  <Grid item xs={10} md={6}>
                     <User user={this.state.user}/>
                   </Grid>
                 </Grid>
-                <Grid className="footer" container justify="space-between" alignItems="baseline" spacing={24}>
+                <Grid className="footer" container justify="space-between">
                   <Grid item xs={3} md={2}><Typography>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">DGP</a></Typography></Grid>
                   <Grid item xs={3} md={1}><Typography>© 2018</Typography></Grid>
                 </Grid>
