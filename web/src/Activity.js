@@ -159,9 +159,10 @@ class Activity extends React.Component {
         return (
             <>
               <Grid item xs>
-                <Button variant="contained" color="primary"
-                        onClick={() => this.props.saveActivity(this.state.activity)}>
-                  Spara aktivitet <Icon>done</Icon>
+                <Button variant="contained" color="primary" onClick={() => {
+                    this.props.saveActivity(Object.assign(this.state.activity, null));
+                    this.setState({editing: false});
+                }}> Spara aktivitet <Icon>done</Icon>
                 </Button>
               </Grid>
               <Grid item xs>{this.toggleEditingButton()}</Grid>
