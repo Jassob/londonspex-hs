@@ -31,36 +31,6 @@ class Activity extends React.Component {
 	};
     }
 
-    renderCardHeader() {
-        return (
-            <>
-              <Grid item xs={6} md={4}>
-                <Grid container>
-                  <Grid item xs={12} md={6}>
-                    <EditableTypography
-                      gutterBottom variant="h5" component="h3" onChange={(event) => this.handleOnChange(event)}
-                      id="title" value={this.state.activity.title} editing={this.state.editing} />
-                  </Grid>
-                </Grid>
-                {this.renderIf (!this.state.editing,
-                  (<Grid container spacing={8}>
-                     <Grid item><Typography color="primary" component="h6">Deltagare:</Typography></Grid>
-                     {this.getAttendees()}
-                   </Grid>))}
-              </Grid>
-              <Grid item xs={10} md={8}>
-                <Grid container>
-                  <Grid item xs>
-                    <EditableTypography
-                      variant="h6" component="h6" value={this.state.activity.description} multiline fullWidth
-                      id="descripion" onChange={event => this.handleOnChange(event)} editing={this.state.editing} />
-                  </Grid>
-                </Grid>
-              </Grid>
-            </>
-        );
-    }
-
     renderIf(bool, content) {
         return bool ? content : "";
     }
@@ -87,7 +57,7 @@ class Activity extends React.Component {
                 {content}
               </CardContent>
               <CardActions>
-                <Grid container direction="row" spacing={16} alignItems="center">
+                <Grid container direction="row" spacing={16} justify="space-evenly" alignItems="baseline">
                   {this.buttonSet()}
                   <Grid item xs>{this.mailLink()}</Grid>
                 </Grid>
@@ -101,7 +71,29 @@ class Activity extends React.Component {
 	let content = (
             <>
               <Grid container justify="center" alignItems="baseline">
-                {this.renderCardHeader()}
+                <Grid item xs={6} md={4}>
+                  <Grid container>
+                    <Grid item xs={12} md={6}>
+                      <EditableTypography
+                        gutterBottom variant="h5" component="h3" onChange={(event) => this.handleOnChange(event)}
+                        id="title" value={this.state.activity.title} editing={this.state.editing} />
+                    </Grid>
+                  </Grid>
+                  {this.renderIf (!this.state.editing,
+                  (<Grid container spacing={8}>
+                     <Grid item><Typography color="primary" component="h6">Deltagare:</Typography></Grid>
+                     {this.getAttendees()}
+                   </Grid>))}
+                </Grid>
+                <Grid item xs={10} md={8}>
+                  <Grid container>
+                    <Grid item xs>
+                      <EditableTypography
+                        variant="h6" component="h6" value={this.state.activity.description} multiline fullWidth
+                        id="description" onChange={(event) => this.handleOnChange(event)} editing={this.state.editing} />
+                    </Grid>
+                  </Grid>
+                </Grid>
               </Grid>
               <Grid container justify="center">
                 <Grid item xs={10} md={4}>
@@ -214,7 +206,7 @@ class Activity extends React.Component {
 
     toggleEditingButton() {
         return (
-            <Button size="small" variant="outlined" onClick={() => this.setState({editing: !this.state.editing})}>
+            <Button disable={this.props.invalid} size="small" variant="outlined" onClick={() => this.setState({editing: !this.state.editing})}>
               {this.state.editing ? 'Avbryt' : 'Ändra aktivitet'} <Icon>{this.state.editing ? 'cancel' : 'edit_icon'}</Icon>
             </Button>
         );
