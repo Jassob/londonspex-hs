@@ -3,6 +3,7 @@ import axios from 'axios';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
 
 import './App.css';
 import settings from './settings.js';
@@ -37,7 +38,8 @@ class App extends Component {
 
     render() {
 	let content = this.state.user ? this.renderActivities() : this.renderLogin();
-	let logoutButton = this.state.user ? <button onClick={() => this.logout()}>Logga ut</button> : "";
+	let logoutButton = this.state.user ? <Button variant="contained" color="secondary"
+                                                     onClick={() => this.logout()}>Logga ut</Button> : "";
 	return (
 	    <Grid container
                   justify="space-around">
@@ -45,13 +47,13 @@ class App extends Component {
               <Grid item xs={12} md={10}>
                 <Grid container direction="row"
                       justify="center"
-                      alignItems="space-around"
-                      alignContents="center"
+                      alignItems="baseline"
+                      alignContent="center"
                       className="header" spacing={24}>
 		  <Grid item xs={8} md={6}><Typography variant="h3">Aktiviteter - London</Typography></Grid>
 		  <Grid item xs={8} md={6}><Typography variant="h4">Chalmersspexet Bob 2018 Geronimo</Typography></Grid>
 	        </Grid>
-                <Grid container alignItems="space-around">
+                <Grid container alignItems="baseline">
                   <Grid item xs>
 	            {content}
                   </Grid>
@@ -65,9 +67,9 @@ class App extends Component {
                     <User user={this.state.user}/>
                   </Grid>
                 </Grid>
-                <Grid className="footer" container justify="space-between" alignItems="space-between" spacing={24}>
+                <Grid className="footer" container justify="space-between" alignItems="baseline" spacing={24}>
                   <Grid item xs={3} md={2}><Typography>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">DGP</a></Typography></Grid>
-                  <Grid item justify="flex-end" xs={3} md={1}><Typography>© 2018</Typography></Grid>
+                  <Grid item xs={3} md={1}><Typography>© 2018</Typography></Grid>
                 </Grid>
 	      </Grid>
             </Grid>
