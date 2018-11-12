@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import settings from './settings.js';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
 
+import './App.css';
+import settings from './settings.js';
+import Utils from './Utils.js';
 import ActivityList from './ActivityList.js';
 import LoginForm from './LoginForm.js';
-import Utils from './Utils.js';
 
 class App extends Component {
     constructor(props) {
@@ -35,17 +39,38 @@ class App extends Component {
 	let content = this.state.user ? this.renderActivities() : this.renderLogin();
 	let logoutButton = this.state.user ? <button onClick={() => this.logout()}>Logga ut</button> : "";
 	return (
-	    <div>
-	      <header>
-		<h1>Aktiviteter - London</h1>
-		<h2>Chalmersspexet Bob 2018 Geronimo</h2>
-	      </header>
-	      {content}
-	      <footer>
-		<p>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">Den Gode Pastorn</a></p>
-		{logoutButton}
-	      </footer>
-	    </div>
+	    <Grid container
+                  justify="space-around">
+              <CssBaseline />
+              <Grid item xs={12} md={10}>
+                <Grid container direction="row"
+                      justify="center"
+                      alignItems="space-around"
+                      alignContents="center"
+                      className="header" spacing={24}>
+		  <Grid item xs={8} md={6}><Typography variant="h3">Aktiviteter - London</Typography></Grid>
+		  <Grid item xs={8} md={6}><Typography variant="h4">Chalmersspexet Bob 2018 Geronimo</Typography></Grid>
+	        </Grid>
+                <Grid container alignItems="space-around">
+                  <Grid item xs>
+	            {content}
+                  </Grid>
+                </Grid>
+                <hr/>
+                <Grid container direction="row" spacing={16}>
+                  <Grid item xs={4} md={2}>
+                    {logoutButton}
+                  </Grid>
+                  <Grid item xs={10} md={6} className="left">
+                    <User user={this.state.user}/>
+                  </Grid>
+                </Grid>
+                <Grid className="footer" container justify="space-between" alignItems="space-between" spacing={24}>
+                  <Grid item xs={3} md={2}><Typography>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">DGP</a></Typography></Grid>
+                  <Grid item justify="flex-end" xs={3} md={1}><Typography>© 2018</Typography></Grid>
+                </Grid>
+	      </Grid>
+            </Grid>
 	);
     }
 
@@ -68,6 +93,15 @@ class App extends Component {
 	      />
 	);
     }
+}
+
+function User(props) {
+    if (props.user) {
+        return <Typography>Inloggad som {props.user.name} ({props.user.email})</Typography>;
+    } else {
+        return <Typography>Inte inloggad</Typography>;
+    }
+
 }
 
 export default App;
