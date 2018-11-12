@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
 
 import Activity from './Activity.js';
 import Utils from './Utils.js';
@@ -9,7 +11,6 @@ class ActivityList extends Component {
 
 	this.state = {
 	    activities: {},
-	    editedActivity: null,
 	};
     }
 
@@ -24,8 +25,7 @@ class ActivityList extends Component {
     }
 
     reloadActivities() {
-        this.getActivities((activities) => this.setState({activities: activities}),
-                           (errors) => console.log(errors));
+        this.getActivities((activities) => this.setState({activities: activities}), error => console.log(error));
     }
 
     newActivity() {
@@ -60,22 +60,15 @@ class ActivityList extends Component {
     }
 
     saveActivity(actId, activity) {
-	if (actId !== 'new') {
-	    this.props.api.post('/activity/' + actId, Utils.urlencode(activity))
-		.then(this.getActivities())
-		.catch((error) => console.log('Update error: ', error));
-	} else {
-	    this.props.api.post('/activity/', Utils.urlencode(activity), )
-		.then(this.getActivities())
-		.catch((error) => console.log('Create error:', error));
-	}
+	let postURL = actId !== 'new' ? '/activities' : '/activity/' + actId;
+	this.props.api.post(postURL, Utils.urlencode(Utils.unmergeActivity(activity)))
+	    .then((response) => console.log(response));
     }
 
     removeActivity(actId) {
 	if (actId !== 'new') {
 	    this.props.api.delete('/activity/' + actId)
-		.then(this.getActivities())
-		.catch((error) => console.log(error));
+		.then(this.reloadActivities());
 	} else {
 	    let activities = Object.assign(this.state.activities, null);
 	    delete activities.new;
@@ -86,25 +79,27 @@ class ActivityList extends Component {
     render() {
 	const activities = [];
 	for (let actId in this.state.activities) {
-	    const editable = this.state.editedActivity === actId ? true : false;
 	    activities.push(
-		<Activity
+		<Grid item xs={12}><Activity
 		  activity={this.state.activities[actId]}
+                  user={this.props.user}
 		  toggleAttendence={() => this.toggleAttendence(actId)}
-		  saveActivity={() => this.saveActivity(actId)}
+		  saveActivity={(activity) => this.saveActivity(actId, activity)}
 		  removeActivity={() => this.removeActivity(actId)}
-		  editable={editable}
-		  new={editable}
-		  key={actId} />
+		  isOwner={this.state.activities[actId].host.email === this.props.user.email}
+		  isNew={actId === 'new'}
+		  key={actId} /></Grid>
 	    );
 	}
 	return (
-	    <div>
+            <Grid container spacing={16} justify="center">
 	      {activities}
-	      <button onClick={() => this.props.addActivity()}>
-		Lägg till ny aktivitet
-	      </button>
-	    </div>
+	      <Grid item>
+                <Button size="small" variant="contained" color="primary" onClick={() => this.addActivity()}>
+	          Lägg till aktivitet
+	        </Button>
+              </Grid>
+            </Grid>
 	);
     }
 }
