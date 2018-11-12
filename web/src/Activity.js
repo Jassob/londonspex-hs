@@ -9,7 +9,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import Icon from '@material-ui/core/Icon';
 import TextField from '@material-ui/core/TextField';
 
-import './Activity.css';
+import './root.css';
 var Utils = require('./Utils.js');
 
 /**
@@ -110,30 +110,30 @@ class Activity extends React.Component {
               <Grid container justify="center" alignItems="baseline">
                 {this.renderCardHeader()}
               </Grid>
-              <Grid container alignItems="flex-end">
-                <Grid item xs>
+              <Grid container justify="center">
+                <Grid item xs={10} md={4}>
                   <Grid container alignItems="center" alignContent="center" justify="center">
-                    <Grid item xs={2}><Typography component="h6">Ansvarig:</Typography></Grid>
-                    <Grid item xs={10}>
+                    <Grid item xs={4} sm={2}  md={5}><Typography component="h6">Ansvarig:</Typography></Grid>
+                    <Grid item xs={8} sm={10} md={7}>
                       <EditableTypography component="p" value={this.props.isOwner ? 'Du' : activity.host.name}
                                           disabled editing={this.state.editing}/>
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item xs>
-                <Grid container>
-                  <Grid item xs={1}><Icon>today</Icon></Grid>
-                  <Grid item xs={11}>
-                    <EditableTypography
-                      component="p" value={this.state.activity.date} editing={this.state.editing}
-                      handleOnChange={event => this.handleOnChange(event)} id="date" />
+                <Grid item xs={10} md={4}>
+                  <Grid container>
+                    <Grid item xs={4} sm={2}><Icon>today</Icon></Grid>
+                    <Grid item xs={8} sm={10}>
+                      <EditableTypography
+                        component="p" value={this.state.activity.date} editing={this.state.editing}
+                        handleOnChange={event => this.handleOnChange(event)} id="date" />
+                    </Grid>
                   </Grid>
                 </Grid>
-                </Grid>
-                <Grid item xs>
+                <Grid item xs={10} md={4}>
                   <Grid container>
-		    <Grid item xs={1}><Icon color="secondary">location_on</Icon></Grid>
-	            <Grid item xs={11}>
+		    <Grid item xs={4} sm={2}><Icon color="secondary">location_on</Icon></Grid>
+	            <Grid item xs={8} sm={10}>
                       <EditableTypography
                         component="p" value={this.state.activity.meetingPoint} editing={this.state.editing}
                         handleOnChange={event => this.handleOnChange(event)} id="meetingPoint"/>
