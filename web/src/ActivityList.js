@@ -61,7 +61,7 @@ class ActivityList extends Component {
     saveActivity(actId, activity) {
 	let postURL = actId === 'new' ? '/activities' : '/activity/' + actId;
 	this.props.api.post(postURL, Utils.urlencode(Utils.unmergeActivity(activity)))
-	    .then((response) => console.log(response));
+	    .then(this.reloadActivities());
     }
 
     removeActivity(actId) {
