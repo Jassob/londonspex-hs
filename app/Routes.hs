@@ -33,11 +33,11 @@ type PersonMap   = HashMap TS.Text DbPerson
 
 routes :: MVar ActivityMap -> MVar PersonMap -> ScottyM ()
 routes as ps = do
+  -- | Serves the frontend
   get "/" $ html =<< liftIO (TL.pack <$> readFile "web/build/index.html")
-
   staticRoutes
 
-  -- TODO: Return session cookie that is valid for some time
+  -- | Logins an existing user
   post "/login" $ rescueBadRequest $ do
     login <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     whenExists (getItemById (loginEmail login) ps) $ \p ->
@@ -45,6 +45,7 @@ routes as ps = do
         then json (person p)
         else unauthorized
 
+  -- | Registers a new user
   post "/register" $ rescueBadRequest $ do
     regReq <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     let pId = (email . person) regReq
@@ -54,20 +55,24 @@ routes as ps = do
       void $ storeState "persons.state" persons
       json (person regReq)
 
+  -- | Get all persons
   get "/persons" $ do
     persons <- fmap person <$> getItems ps
     json persons
 
+  -- | Get a specific person
   get "/person/:personId" $ do
     personId <- param "personId"
     p        <- fmap person <$> getItemById personId ps
     maybe notFound json p
 
+  -- | Get all activities and persons
   get "/activities" $ do
     activities <- getItems as
     persons    <- fmap person <$> getItems ps
     json (activities, persons)
 
+  -- | Get a specific activity
   get "/activity/:activityId" $ do
     activityId <- read <$> param "activityId"
     persons    <- fmap person <$> getItems ps
@@ -76,7 +81,8 @@ routes as ps = do
           actAttendees = map (`M.lookup` persons) (attendees act)
       in  json (act, actHost, actAttendees)
 
-  post "/activity/" $ rescueBadRequest $ do
+  -- | Create new activity
+  post "/activities" $ rescueBadRequest $ do
     let addNewActivity :: Activity -> ActivityMap -> ActivityMap
         addNewActivity a am = M.insert (newId am) a am
     newActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
@@ -84,12 +90,14 @@ routes as ps = do
     void $ storeState "activities.state" activities
     text "OK"
 
-  put "/activity/:activityId" $ rescueBadRequest $ do
+  -- | Update activity
+  post "/activity/:activityId" $ rescueBadRequest $ do
     activityId <- read <$> param "activityId"
     updatedActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     activities <- updateItems as $ pure . M.insert activityId updatedActivity
     void $ storeState "activities.state" activities
 
+  -- | Delete activity
   delete "/activity/:activityId" $ flip rescue (const notFound) $ do
     activityId <- read <$> param "activityId"
     _ <- liftNothing =<< getItemById activityId as
