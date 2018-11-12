@@ -1,5 +1,15 @@
 import React from 'react';
+import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Icon from '@material-ui/core/Icon';
+import TextField from '@material-ui/core/TextField';
 
+import './Activity.css';
 var Utils = require('./Utils.js');
 
 /**
@@ -16,163 +26,224 @@ class Activity extends React.Component {
 	super(props);
 
 	this.state = {
-	    isExpanded: false,
 	    editing: false,
+            activity: props.activity,
 	};
     }
 
-    toggleExpand() {
-	this.setState({
-	    isExpanded: !this.state.isExpanded,
-	});
+    renderCardHeader() {
+        return (
+            <>
+              <Grid item xs={6} md={4}>
+                <Grid container>
+                  <Grid item xs={12} md={6}>
+                    <EditableTypography
+                      gutterBottom variant="h5" component="h3" onChange={(event) => this.handleOnChange(event)}
+                      id="title" value={this.state.activity.title} editing={this.state.editing} />
+                  </Grid>
+                </Grid>
+                <Grid container>
+                  <Grid item xs={12} md={6}>
+                    <EditableTypography
+                      variant="body2" component="p" justify="flex-end" value={this.state.activity.date} id="date"
+                      onChange={(event) => this.handleOnChange(event)} editing={this.state.editing} />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={10} md={8}>
+                <Grid container>
+                  <Grid item xs>
+                    <EditableTypography
+                      variant="h6" component="h6" value={this.state.activity.description} multiline fullWidth
+                      id="descripion" onChange={event => this.handleOnChange(event)} editing={this.state.editing} />
+                  </Grid>
+                </Grid>
+                {this.renderIf (!this.state.editing,
+                  (<Grid container spacing={8}>
+                     <Grid item><Typography color="primary" component="h6">Deltagare:</Typography></Grid>
+                     {this.getAttendees()}
+                   </Grid>))}
+              </Grid>
+            </>
+        );
     }
 
-    renderMinimal() {
-	return (
-	    <div>
-	      <header>
-		<h3>{this.props.activity.date} - {this.props.activity.title}</h3>
-		<p>{this.props.activity.description}</p>
-	      </header>
-              {this.buttonSet()}
-	    </div>
-	);
+    renderIf(bool, content) {
+        return bool ? content : "";
     }
+
 
     buttonSet() {
         if (this.state.editing) {
             return this.renderEditingButtons();
-        } else if (this.state.isExpanded) {
-            return this.renderExpandedButtons();
         } else {
-            return this.renderMinimalButtons();
+            return this.renderNormalButtons();
         }
     }
 
-    renderFull(activity) {
-	let mapAttendees = (obj, func) => Utils.objectToList(Utils.objectMapWithKey(obj, func));
-	let constructAttendee = (k, v) => <li><Attendee person={v} key={k}/></li>;
-	let attendeeDisp = mapAttendees(this.props.activity.attendees, constructAttendee);
-	return (
-	    <div>
-	      <header>
-		<h3 contentEditable={this.state.editing}>{activity.title}</h3>
-		<p contentEditable={this.state.editing}>{activity.description}</p>
-	      </header>
-	      <dl>
-		<dt>Ansvarig</dt>
-		<dd contentEditable={this.state.editing}>{activity.host.name}</dd>
-		<dt>Starttid</dt>
-		<dd contentEditable={this.state.editing}>{activity.date}</dd>
-		<dt>Mötesplats</dt>
-		<dd contentEditable={this.state.editing}>{activity.meetingPoint}</dd>
-		<dt>Deltagare</dt>
-		<dd>
-		  <ul>{attendeeDisp}</ul>
-		</dd>
-	      </dl>
-	      {this.mailLink()}
-	      {this.buttonSet()}
-	    </div>
-	);
+    getAttendees() {
+        let mapAttendees = (obj, func) => Utils.objectToList(Utils.objectMapWithKey(obj, func));
+	let constructAttendee = (k, v) => <Grid item><Attendee component="p" person={v} key={k}/></Grid>;
+	return mapAttendees(this.props.activity.attendees, constructAttendee);
+    }
+
+    renderCard(content) {
+        return (
+            <Card className="activity">
+              <CardContent>
+                {content}
+              </CardContent>
+              <CardActions>
+                <Grid container direction="row" spacing={16} alignItems="center">
+                  {this.buttonSet()}
+                  <Grid item xs>{this.mailLink()}</Grid>
+                </Grid>
+              </CardActions>
+            </Card>
+        );
     }
 
     render() {
-	if (this.state.isExpanded || this.state.editing) {
-            let activity = this.state.edithing ? this.state.editedActivity : this.props.activity;
-	    return this.renderFull(activity);
-	} else {
-	    return this.renderMinimal();
-	}
+        let activity = this.state.activity;
+	let content = (
+            <>
+              <Grid container justify="center" alignItems="baseline">
+                {this.renderCardHeader()}
+              </Grid>
+              <Grid container alignItems="flex-end">
+                <Grid item xs>
+                  <Grid container alignItems="center" alignContent="center" justify="center">
+                    <Grid item xs={2}><Typography component="h6">Ansvarig:</Typography></Grid>
+                    <Grid item xs={10}>
+                      <EditableTypography component="p" value={this.props.isOwner ? 'Du' : activity.host.name}
+                                          disabled editing={this.state.editing}/>
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid item xs>
+                <Grid container>
+                  <Grid item xs={1}><Icon>today</Icon></Grid>
+                  <Grid item xs={11}>
+                    <EditableTypography
+                      component="p" value={this.state.activity.date} editing={this.state.editing}
+                      handleOnChange={event => this.handleOnChange(event)} id="date" />
+                  </Grid>
+                </Grid>
+                </Grid>
+                <Grid item xs>
+                  <Grid container>
+		    <Grid item xs={1}><Icon color="secondary">location_on</Icon></Grid>
+	            <Grid item xs={11}>
+                      <EditableTypography
+                        component="p" value={this.state.activity.meetingPoint} editing={this.state.editing}
+                        handleOnChange={event => this.handleOnChange(event)} id="meetingPoint"/>
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </>
+        );
+
+        return this.renderCard(content);
     }
 
     mailLink() {
+        let mailAddress;
+        let text;
         if (this.props.isOwner) {
 	    const flattenAttendees = (attendees, func) => Utils.objectToList(Utils.objectMap(attendees, func)).join(",");
-	    const mailAddresses = flattenAttendees(this.props.activity.attendees, (attendee) => attendee.email);
-	    return <a href={'"mailto://' + mailAddresses + '"'}>Maila alla deltagare</a>;
+	    mailAddress = flattenAttendees(this.props.activity.attendees, (attendee) => attendee.email);
+            text = "Maila alla deltagare";
         } else {
-            return <a href={'"mailto://' + this.props.activity.host.email + '"'}>Maila ansvarig</a>;
+            mailAddress = this.props.activity.host.email;
+            text = "Maila ansvarig";
         }
+
+        return <Button onClick={() => window.open('mailto:' + mailAddress, "_blank")}
+                       color="primary" variant="outlined" size="small">{text} <Icon>email</Icon></Button>;
+    }
+
+    handleOnChange(event) {
+        let activity = this.state.activity;
+        activity[event.target.name] = event.target.value;
+        this.setState({activity:activity});
     }
 
     /* Buttons */
     renderEditingButtons() {
         return (
             <>
-              <Button onClick={() => this.props.saveActivity(this.state.editedActivity)}
-                      text={"Spara aktivitet"} />
-              {this.toggleEditingButton()}
-              {this.removeButton()}
+              <Grid item xs>
+                <Button variant="contained" color="primary"
+                        onClick={() => this.props.saveActivity(this.state.activity)}>
+                  Spara aktivitet <Icon>done</Icon>
+                </Button>
+              </Grid>
+              <Grid item xs>{this.toggleEditingButton()}</Grid>
+              <Grid item xs>{this.removeButton()}</Grid>
             </>
         );
     }
 
-    renderExpandedButtons() {
+    renderNormalButtons() {
         if (this.props.isOwner) {
             return (
                 <>
-                  {this.toggleEditingButton()}
-                  {this.toggleExpandButton()}
-                  {this.removeButton()}
+                  <Grid item xs>{this.toggleEditingButton()}</Grid>
+                  <Grid item xs>{this.removeButton()}</Grid>
                 </>
             );
         } else {
             return (
                 <>
-                  {this.attendenceButton()}
-                  {this.toggleExpandButton()}
+                  <Grid item xs>{this.attendenceButton()}</Grid>
                 </>
             );
         }
     }
 
-    renderMinimalButtons() {
-        return (
-            <>
-              {this.toggleExpandButton()}
-              {this.attendenceButton()}
-            </>
-        );
-    }
-
     attendenceButton() {
         return (
-            <Button onClick={() => this.props.toggleAttendence()}
-                    text={this.props.activity.attendees[this.props.user.email]
-                          ? "Avanmäl intresse" : "Anmäl intresse"} />
+            <Button size="small" color="primary" variant="contained" onClick={() => this.props.toggleAttendence()}>
+              {this.props.activity.attendees[this.props.user.email] ? "Avanmäl intresse" : "Anmäl intresse"}
+            </Button>
         );
     }
 
     removeButton() {
         return (
-            <Button onClick={() => this.props.removeActivity()}
-                    text={"Ta bort aktivitet"}/>
-        );
-    }
-
-    toggleExpandButton() {
-        return (
-            <Button onClick={() => this.toggleExpand()}
-              text={this.state.isExpanded ? 'Stäng aktivitet' : 'Öppna aktivitet'} />
+            <Button size="small" variant="outlined" onClick={() => this.props.removeActivity()}
+                    color="secondary">
+              Ta bort aktivitet <DeleteIcon/>
+            </Button>
         );
     }
 
     toggleEditingButton() {
         return (
-            <Button onClick={() => this.setState({editing: !this.state.editing})}
-                    text={this.state.editing ? 'Avbryt' : 'Ändra aktivitet'} />
+            <Button size="small" variant="outlined" onClick={() => this.setState({editing: !this.state.editing})}>
+              {this.state.editing ? 'Avbryt' : 'Ändra aktivitet'} <Icon>{this.state.editing ? 'cancel' : 'edit_icon'}</Icon>
+            </Button>
         );
     }
-
 }
 
 function Attendee(props) {
-    return <p onClick={props.onClick}>{props.person.name}</p>;
+    return <Typography color={props.color} component={props.component}>{props.person.name}</Typography>;
 }
 
-function Button(props) {
-    return <button onClick={props.onClick}>{props.text}</button>;
+function EditableTypography(props) {
+    if (!props.editing) {
+        return (
+            <Typography color={props.color} component={props.component} gutterBottom={props.gutterBottom}
+                        variant={props.variant}>{props.value}</Typography>
+        );
+    } else {
+        return (
+            <TextField id={props.name} label={props.label} defaultValue={props.value} fullWidth={props.fullWidth}
+                       onChange={props.onChange} multiline={props.multiline} disabled={props.disabled}/>
+        );
+    }
 }
 
 export default Activity;
