@@ -17,7 +17,7 @@ class Activity extends React.Component {
 
 	this.state = {
 	    isExpanded: false,
-	    isEditable: this.props.editable,
+	    editing: false,
 	};
     }
 
@@ -33,84 +33,146 @@ class Activity extends React.Component {
 	      <header>
 		<h3>{this.props.activity.date} - {this.props.activity.title}</h3>
 		<p>{this.props.activity.description}</p>
-		<button onClick={() => this.toggleExpand()}>
-		  Öppna aktivitet
-		</button>
 	      </header>
-	      <button onClick={() => this.props.toggleAttendence()}>
-		Anmäl intresse
-	      </button>
+              {this.buttonSet()}
 	    </div>
 	);
     }
 
-    renderFull() {
+    buttonSet() {
+        if (this.state.editing) {
+            return this.renderEditingButtons();
+        } else if (this.state.isExpanded) {
+            return this.renderExpandedButtons();
+        } else {
+            return this.renderMinimalButtons();
+        }
+    }
+
+    renderFull(activity) {
 	let mapAttendees = (obj, func) => Utils.objectToList(Utils.objectMapWithKey(obj, func));
-	let constructAttendee = (k, v) =>
-	    <li><Attendee person={v} key={k} onClick={() => this.props.removeAttendee(k)} /></li>;
+	let constructAttendee = (k, v) => <li><Attendee person={v} key={k}/></li>;
 	let attendeeDisp = mapAttendees(this.props.activity.attendees, constructAttendee);
-	const editable = this.state.isEditable;
-	const activity = this.state.isEditable ? this.state.editedActivity : this.props.activity;
-	let editButtons = (
-	    <div>
-	      <button onClick={() => this.props.saveActivity(this.state.isEditable)}>
-		Spara aktivitet
-	      </button>
-	      <button onClick={() => this.props.new ? this.props.removeActivity('new') : this.setState({isEditable: false})}>
-		Avbryt
-	      </button>
-	    </div>
-	);
-	let normalButtons = (
-	    <div>
-	      <button onClick={() => this.toggleExpand()}>Stäng aktivitet</button>
-	      <button onClick={() => this.setState({isEditable: true})}>Ändra aktivitet</button>
-	      <button onClick={() => this.props.removeActivity()}>Ta bort aktivitet</button>
-	    </div>
-	);
 	return (
 	    <div>
 	      <header>
-		<h3 contentEditable={editable}>{activity.title}</h3>
-		<p contentEditable={editable}>{activity.description}</p>
+		<h3 contentEditable={this.state.editing}>{activity.title}</h3>
+		<p contentEditable={this.state.editing}>{activity.description}</p>
 	      </header>
 	      <dl>
 		<dt>Ansvarig</dt>
-		<dd contentEditable={editable}>{activity.host.name}</dd>
+		<dd contentEditable={this.state.editing}>{activity.host.name}</dd>
 		<dt>Starttid</dt>
-		<dd contentEditable={editable}>{activity.date}</dd>
+		<dd contentEditable={this.state.editing}>{activity.date}</dd>
 		<dt>Mötesplats</dt>
-		<dd contentEditable={editable}>{activity.meetingPoint}</dd>
+		<dd contentEditable={this.state.editing}>{activity.meetingPoint}</dd>
 		<dt>Deltagare</dt>
 		<dd>
 		  <ul>{attendeeDisp}</ul>
 		</dd>
 	      </dl>
-	      <a href={this.mailAttendees()}>
-		Maila alla deltagare
-	      </a>
-	      {this.state.isEditable ? editButtons : normalButtons}
+	      {this.mailLink()}
+	      {this.buttonSet()}
 	    </div>
 	);
     }
 
     render() {
-	if (this.state.isExpanded || this.state.isEditable) {
-	    return this.renderFull();
+	if (this.state.isExpanded || this.state.editing) {
+            let activity = this.state.edithing ? this.state.editedActivity : this.props.activity;
+	    return this.renderFull(activity);
 	} else {
 	    return this.renderMinimal();
 	}
     }
 
-    mailAttendees() {
-	const flattenAttendees = (attendees, func) => Utils.objectToList(Utils.objectMap(attendees, func)).join(",");
-	const mailAddresses = flattenAttendees(this.props.activity.attendees, (attendee) => attendee.email);
-	return "mailto://" + mailAddresses;
+    mailLink() {
+        if (this.props.isOwner) {
+	    const flattenAttendees = (attendees, func) => Utils.objectToList(Utils.objectMap(attendees, func)).join(",");
+	    const mailAddresses = flattenAttendees(this.props.activity.attendees, (attendee) => attendee.email);
+	    return <a href={'"mailto://' + mailAddresses + '"'}>Maila alla deltagare</a>;
+        } else {
+            return <a href={'"mailto://' + this.props.activity.host.email + '"'}>Maila ansvarig</a>;
+        }
     }
+
+    /* Buttons */
+    renderEditingButtons() {
+        return (
+            <>
+              <Button onClick={() => this.props.saveActivity(this.state.editedActivity)}
+                      text={"Spara aktivitet"} />
+              {this.toggleEditingButton()}
+              {this.removeButton()}
+            </>
+        );
+    }
+
+    renderExpandedButtons() {
+        if (this.props.isOwner) {
+            return (
+                <>
+                  {this.toggleEditingButton()}
+                  {this.toggleExpandButton()}
+                  {this.removeButton()}
+                </>
+            );
+        } else {
+            return (
+                <>
+                  {this.attendenceButton()}
+                  {this.toggleExpandButton()}
+                </>
+            );
+        }
+    }
+
+    renderMinimalButtons() {
+        return (
+            <>
+              {this.toggleExpandButton()}
+              {this.attendenceButton()}
+            </>
+        );
+    }
+
+    attendenceButton() {
+        return (
+            <Button onClick={() => this.props.toggleAttendence()}
+                    text={this.props.activity.attendees[this.props.user.email]
+                          ? "Avanmäl intresse" : "Anmäl intresse"} />
+        );
+    }
+
+    removeButton() {
+        return (
+            <Button onClick={() => this.props.removeActivity()}
+                    text={"Ta bort aktivitet"}/>
+        );
+    }
+
+    toggleExpandButton() {
+        return (
+            <Button onClick={() => this.toggleExpand()}
+              text={this.state.isExpanded ? 'Stäng aktivitet' : 'Öppna aktivitet'} />
+        );
+    }
+
+    toggleEditingButton() {
+        return (
+            <Button onClick={() => this.setState({editing: !this.state.editing})}
+                    text={this.state.editing ? 'Avbryt' : 'Ändra aktivitet'} />
+        );
+    }
+
 }
 
 function Attendee(props) {
     return <p onClick={props.onClick}>{props.person.name}</p>;
+}
+
+function Button(props) {
+    return <button onClick={props.onClick}>{props.text}</button>;
 }
 
 export default Activity;
