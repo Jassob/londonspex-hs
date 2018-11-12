@@ -88,7 +88,6 @@ routes as ps = do
     newActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     activities  <- updateItems as (pure . addNewActivity newActivity)
     void $ storeState "activities.state" activities
-    text "OK"
 
   -- | Update activity
   post "/activity/:activityId" $ rescueBadRequest $ do
