@@ -39,7 +39,7 @@ class App extends Component {
     render() {
 	let content = this.state.user ? this.renderActivities() : this.renderLogin();
 	let logoutButton = this.state.user ? (
-            <Grid item xs={4} md={2}><Button variant="contained" color="secondary"
+            <Grid item xs={4} md={2}><Button size="small" variant="contained" color="secondary"
                                              onClick={() => this.logout()}>Logga ut</Button></Grid>) : "";
 	return (
 	    <Grid container
@@ -59,13 +59,12 @@ class App extends Component {
 	            {content}
                   </Grid>
                 </Grid>
-                <hr/>
-                <Grid container direction="row" spacing={16}>
-		  {logoutButton}
-                  <Grid item xs={10} md={6}>
-                    <User user={this.state.user}/>
-                  </Grid>
+                <br />
+                <Grid container direction="row" spacing={16} justify="space-between" alignItems="center">
+                  <Grid item xs={10} md={6}><User user={this.state.user}/></Grid>
+                  {logoutButton}
                 </Grid>
+                <hr />
                 <Grid className="footer" container justify="space-between">
                   <Grid item xs={3} md={2}><Typography>Skapad av <a href="mailto://jacob.t.jonsson@gmail.com">DGP</a></Typography></Grid>
                   <Grid item xs={3} md={1}><Typography>© 2018</Typography></Grid>
