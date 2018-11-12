@@ -49,14 +49,13 @@ class ActivityList extends Component {
     }
 
     toggleAttendence(actId) {
-        let activity = Utils.unmergeActivity(this.state.activities[actId]);
-	if (activity.attendees.includes(this.props.user.email)) {
-            activity.attendees = activity.attendees.filter((email) => email !== this.props.user.email);
+        let activity = Object.assign(this.state.activities[actId], null);
+	if (activity.attendees[this.props.user.email]) {
+            delete activity.attendees[this.props.user.email];
 	} else {
-            activity.attendees.push(this.props.user.email);
+            activity.attendees[this.props.user.email] = this.props.user;
 	}
-        this.props.api.post('/activity/' + actId, Utils.urlencode(activity))
-            .then(this.reloadActivities());
+        this.saveActivity(actId, activity);
     }
 
     saveActivity(actId, activity) {
