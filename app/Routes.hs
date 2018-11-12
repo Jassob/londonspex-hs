@@ -107,7 +107,7 @@ defineStaticRoute type' =
   get (capture $ "/static/" <> type' <> "/:resource") $ do
     resource <- param "resource"
     setHeader "Content-Type" =<< contentType type'
-    file ("web/build/static/js/" <> resource)
+    file ("web/build/static/" <> type' <> "/" <> resource)
  where
   contentType "css" = pure "text/css"
   contentType "js"  = pure "application/javascript"
