@@ -89,7 +89,12 @@ routes as ps = do
     updatedActivity <- liftNothing =<< fromUrlEncoded <$> bodyStrict
     activities <- updateItems as $ pure . M.insert activityId updatedActivity
     void $ storeState "activities.state" activities
-    text "OK"
+
+  delete "/activity/:activityId" $ flip rescue (const notFound) $ do
+    activityId <- read <$> param "activityId"
+    _ <- liftNothing =<< getItemById activityId as
+    activities <- updateItems as (pure . M.delete activityId)
+    void $ storeState "activities.state" activities
 
 staticRoutes :: ScottyM ()
 staticRoutes = do
