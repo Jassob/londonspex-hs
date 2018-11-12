@@ -111,7 +111,7 @@ class Activity extends React.Component {
                     <Grid item xs={8} sm={10}>
                       <EditableTypography
                         component="p" value={this.state.activity.date} editing={this.state.editing}
-                        handleOnChange={event => this.handleOnChange(event)} id="date" />
+                        onChange={(event) => this.handleOnChange(event)} id="date" />
                     </Grid>
                   </Grid>
                 </Grid>
@@ -121,7 +121,7 @@ class Activity extends React.Component {
 	            <Grid item xs={8} sm={10}>
                       <EditableTypography
                         component="p" value={this.state.activity.meetingPoint} editing={this.state.editing}
-                        handleOnChange={event => this.handleOnChange(event)} id="meetingPoint"/>
+                        onChange={(event) => this.handleOnChange(event)} id="meetingPoint"/>
                     </Grid>
                   </Grid>
                 </Grid>
