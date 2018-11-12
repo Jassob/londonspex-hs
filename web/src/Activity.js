@@ -42,13 +42,11 @@ class Activity extends React.Component {
                       id="title" value={this.state.activity.title} editing={this.state.editing} />
                   </Grid>
                 </Grid>
-                <Grid container>
-                  <Grid item xs={12} md={6}>
-                    <EditableTypography
-                      variant="body2" component="p" justify="flex-end" value={this.state.activity.date} id="date"
-                      onChange={(event) => this.handleOnChange(event)} editing={this.state.editing} />
-                  </Grid>
-                </Grid>
+                {this.renderIf (!this.state.editing,
+                  (<Grid container spacing={8}>
+                     <Grid item><Typography color="primary" component="h6">Deltagare:</Typography></Grid>
+                     {this.getAttendees()}
+                   </Grid>))}
               </Grid>
               <Grid item xs={10} md={8}>
                 <Grid container>
@@ -58,11 +56,6 @@ class Activity extends React.Component {
                       id="descripion" onChange={event => this.handleOnChange(event)} editing={this.state.editing} />
                   </Grid>
                 </Grid>
-                {this.renderIf (!this.state.editing,
-                  (<Grid container spacing={8}>
-                     <Grid item><Typography color="primary" component="h6">Deltagare:</Typography></Grid>
-                     {this.getAttendees()}
-                   </Grid>))}
               </Grid>
             </>
         );
@@ -165,7 +158,7 @@ class Activity extends React.Component {
 
     handleOnChange(event) {
         let activity = this.state.activity;
-        activity[event.target.name] = event.target.value;
+        activity[event.target.id] = event.target.value;
         this.setState({activity:activity});
     }
 
@@ -240,7 +233,7 @@ function EditableTypography(props) {
         );
     } else {
         return (
-            <TextField id={props.name} label={props.label} defaultValue={props.value} fullWidth={props.fullWidth}
+            <TextField id={props.id} label={props.label} defaultValue={props.value} fullWidth={props.fullWidth}
                        onChange={props.onChange} multiline={props.multiline} disabled={props.disabled}/>
         );
     }
