@@ -23,8 +23,7 @@ class LoginForm extends Component {
     }
 
     handleFormUpdate(event) {
-	let state = {}; state[event.target.name] = event.target.value;
-	this.setState(state);
+        this.setState({[event.target.id]: event.target.value});
     }
 
     render() {
@@ -53,7 +52,7 @@ class LoginForm extends Component {
 	                     onChange={(event) => this.handleFormUpdate(event)} />
                 </Grid>
                 <Grid item xs={8} md={4}>
-                  <TextField id="password" type="password" required label="Lösendord"
+                  <TextField id="password" type="password" required label="Lösenord"
                              onChange={(event) => this.handleFormUpdate(event)} />
                 </Grid>
                 <Grid item xs={8} md={4}>
