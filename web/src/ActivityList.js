@@ -60,6 +60,10 @@ class ActivityList extends Component {
 
     saveActivity(actId, activity) {
 	let postURL = actId === 'new' ? '/activities' : '/activity/' + actId;
+        // Extremely hackish solution, forces the rendering of the ActivityList to be redone
+        let activities = this.state.activities;
+        delete activities[actId];
+        this.setState({activities: activities});
 	this.props.api.post(postURL, Utils.urlencode(Utils.unmergeActivity(activity)))
 	    .then(this.reloadActivities());
     }
