@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 
-import './App.css';
+import './root.css';
 import settings from './settings.js';
 import Utils from './Utils.js';
 import ActivityList from './ActivityList.js';
@@ -44,7 +44,7 @@ class App extends Component {
 	    <Grid container
                   justify="space-around">
               <CssBaseline />
-              <Grid item xs={12} md={10}>
+              <Grid item xs={12} sm={10} md={8} >
                 <Grid container direction="row"
                       justify="center"
                       alignItems="baseline"
@@ -53,7 +53,7 @@ class App extends Component {
 		  <Grid item xs={8} md={6}><Typography variant="h3">Aktiviteter - London</Typography></Grid>
 		  <Grid item xs={8} md={6}><Typography variant="h4">Chalmersspexet Bob 2018 Geronimo</Typography></Grid>
 	        </Grid>
-                <Grid container alignItems="baseline">
+                <Grid container className="root" alignItems="baseline">
                   <Grid item xs>
 	            {content}
                   </Grid>

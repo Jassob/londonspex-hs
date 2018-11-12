@@ -5,7 +5,6 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 
 import './root.css';
-import './LoginForm.css';
 import Utils from './Utils.js';
 
 class LoginForm extends Component {
