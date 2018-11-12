@@ -59,7 +59,6 @@ class ActivityList extends Component {
             .then(this.reloadActivities());
     }
 
-    /* TODO: Change post to send application/x-www-form-urlencoded instead of JSON */
     saveActivity(actId, activity) {
 	if (actId !== 'new') {
 	    this.props.api.post('/activity/' + actId, Utils.urlencode(activity))
