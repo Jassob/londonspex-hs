@@ -18,6 +18,7 @@ import           Control.Monad.IO.Class         ( MonadIO
 import           Data.Hashable                  ( Hashable )
 import           Data.HashMap.Strict            ( HashMap )
 import qualified Data.HashMap.Strict           as M
+import           Data.Monoid                    ((<>))
 import qualified Data.Text                     as TS
 import qualified Data.Text.Lazy                as TL
 import           Data.Text.Lazy.Encoding        ( decodeUtf8 )

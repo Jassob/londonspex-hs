@@ -11,9 +11,11 @@ import           Crypto.PasswordStore           ( verifyPassword
                                                 )
 import           Data.Aeson                     ( ToJSON
                                                 , FromJSON
-                                                , encodeFile
-                                                , decodeFileStrict
+                                                , encode
+                                                , decodeStrict
                                                 )
+import qualified Data.ByteString           as BS
+import qualified Data.ByteString.Lazy      as BL
 import           Data.Text                      ( Text )
 import           Data.Text.Encoding             ( encodeUtf8
                                                 , decodeUtf8
@@ -42,3 +44,9 @@ newPerson :: DbPerson -> IO DbPerson
 newPerson p = do
   pwd <- decodeUtf8 <$> makePassword (encodeUtf8 $ hashedPassword p) 17
   pure $ p { hashedPassword = pwd }
+
+encodeFile :: (MonadIO m, ToJSON a) => FilePath -> a -> m ()
+encodeFile fp = liftIO . BS.writeFile fp . BL.toStrict . encode
+
+decodeFileStrict :: (MonadIO m, FromJSON a) => FilePath -> m (Maybe a)
+decodeFileStrict fp = liftIO $ decodeStrict <$> BS.readFile fp
